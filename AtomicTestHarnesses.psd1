@@ -16,7 +16,7 @@ Author = 'Mike Haag, Jesse Brown, Matt Graeber'
 CompanyName = 'Red Canary, Inc.'
 
 # Copyright statement for this module
-Copyright = 'BSD 3-Clause'
+Copyright = '2020 Red Canary, Inc. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'A module to facilitate the testing of attack techniques and their corresponding procedures.'
