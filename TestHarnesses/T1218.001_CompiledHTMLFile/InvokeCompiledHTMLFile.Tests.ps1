@@ -18,7 +18,7 @@ Describe 'Invoke-ATHCompiledHelp' {
         }
     }
 
-    Context 'Validating error conditions' -Tag 'Unit', 'T1218.004' {
+    Context 'Validating error conditions' -Tag 'Unit', 'T1218.001' {
         BeforeEach {
             Get-Process -Name hh -ErrorAction SilentlyContinue | Stop-Process -Force
         }
@@ -79,7 +79,7 @@ Describe 'Invoke-ATHCompiledHelp' {
         }
     }
 
-    Context 'Expected artifacts and behaviors when exercising the attack technique' -Tag 'Technique', 'T1218.004' {
+    Context 'Expected artifacts and behaviors when exercising the attack technique' -Tag 'Technique', 'T1218.001' {
         BeforeAll {
             $Script:AlternateHHPath = "$env:windir\Temp\notepad.exe"
 
