@@ -35,10 +35,10 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('Security', 'Defense', 'Red Canary')
+        Tags = @('Security', 'Defense')
 
         # A URL to the license for this module.
-        LicenseUri = 'https://opensource.org/licenses/BSD-3-Clause'
+        LicenseUri = 'https://github.com/redcanaryco/AtomicTestHarnesses/blob/master/LICENSE'
 
         # A URL to the main website for this project.
         ProjectUri = 'https://github.com/redcanaryco/AtomicTestHarnesses'
