@@ -179,9 +179,9 @@ Executes an HTA locally as a UNC path using the LethalHTA lateral movement techn
 .EXAMPLE
 
 Copy-Item C:\Windows\System32\mshta.exe C:\Temp\notepad.exe
-Invoke-ATHHTMLApplication -InlineProtocolHandler JScript -MSHTAFilePath C:\Temp\notepad.exe
+Invoke-ATHHTMLApplication -InlineProtocolHandler JavaScript -MSHTAFilePath C:\Temp\notepad.exe
 
-Executes inline HTA JScript content using a masqueraded mshta.exe process.
+Executes inline HTA JavaScript content using a masqueraded mshta.exe process.
 
 .EXAMPLE
 
