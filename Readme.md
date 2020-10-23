@@ -8,9 +8,19 @@ Have you ever been asked the question and been held accountable to answer the fo
 
 ## Installing the AtomicTestHarnesses Module
 
-`AtomicTestHarnesses` is no different than any other PowerShell module. It can be installed either as an [auto-loaded module](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_modules?view=powershell-7#module-auto-loading) or it can be explicitly imported.
+`AtomicTestHarnesses` is no different than any other PowerShell module. It can be installed from the [PowerShell Gallery](https://www.powershellgallery.com/), as an [auto-loaded module](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_modules?view=powershell-7#module-auto-loading), or it can be manually imported.
 
-### Installation Method #1: Module Auto-loading
+### Installation Method #1: PowerShell Gallery
+
+AtomicTestHarnesses is available in the [PowerShell Gallery](https://www.powershellgallery.com/packages/AtomicTestHarnesses). Installation from the PowerShell Gallery is the most straightforward installation method. Run the following:
+
+```powershell
+Install-Module -Name AtomicTestHarnesses -Scope CurrentUser
+```
+
+### Installation Method #2: Module Auto-loading
+
+For manual installation from GitHub, you can follow these steps. Installation via `Install-Module` handles these steps that follow.
 
 To support auto-loading of the `AtomicTestHarnesses` module, the `AtomicTestHarnesses` folder must reside in a module directory. There are multiple module directories by default, each with their own scope, each one present in the `%PSModulePath%` environment variable. You can view the existing module directories with the following PowerShell code:
 
@@ -22,7 +32,7 @@ For example, if you wanted to install the module for all users, you would copy t
 
 Upon copying the `AtomicTestHarnesses` root directory to the desired module path, you can begin using the exported functions right away without having to call [`Import-Module`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/import-module?view=powershell-7).
 
-### Installation Method #2: Explicitly Importing
+### Installation Method #3: Explicitly Importing
 
 Rather than placing the `AtomicTestHarnesses` root directory in a module path, it can be directly imported regardless of where it resides by calling `Import-Module` on the module `PSD1` file. Example:
 
