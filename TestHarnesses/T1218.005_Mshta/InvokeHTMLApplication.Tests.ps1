@@ -22,15 +22,15 @@ Describe 'Invoke-ATHHTMLApplication' {
     }
 
     Context 'Validating error conditions' -Tag 'Unit', 'T1218.005' {
-        It 'mshta.exe execution should not execute notepad.exe' {
+        It 'mshta.exe execution should not execute notepad.exe' -Tag 'Unit', 'T1218.005' {
             { Invoke-ATHHTMLApplication -HTAFilePath "$Env:windir\System32\notepad.exe" -ErrorAction Stop } | Should -Throw
         }
 
-        It 'rundll32.exe execution should not execute notepad.exe' {
+        It 'rundll32.exe execution should not execute notepad.exe' -Tag 'Unit', 'T1218.005' {
             { Invoke-ATHHTMLApplication -UseRundll32 -Rundll32FilePath "$Env:windir\System32\notepad.exe" -ErrorAction Stop } | Should -Throw
         }
 
-        It 'should not run test when current working directory is the same as mshta.exe path' {
+        It 'should not run test when current working directory is the same as mshta.exe path' -Tag 'Unit', 'T1218.005' {
             Push-Location
             # Set current directory to the same directory as mshta.exe
             Set-Location -Path "$Env:windir\System32"
@@ -40,7 +40,7 @@ Describe 'Invoke-ATHHTMLApplication' {
             Pop-Location
         }
 
-        It 'should not run test when a non-existent HTA path is specified' {
+        It 'should not run test when a non-existent HTA path is specified' -Tag 'Unit', 'T1218.005' {
             $BogusPath = 'C:\dsdfsiuhsdrfsawgfds'
 
             Test-Path -Path $BogusPath -PathType Container | Should -BeFalse
@@ -48,11 +48,11 @@ Describe 'Invoke-ATHHTMLApplication' {
             { Invoke-ATHHTMLApplication -HTAFilePath $BogusPath -ErrorAction Stop } | Should -Throw
         }
 
-        It 'should not run test when an HTA file is specified without an .hta extension when -SimulateUserDoubleClick is supplied' {
+        It 'should not run test when an HTA file is specified without an .hta extension when -SimulateUserDoubleClick is supplied' -Tag 'Unit', 'T1218.005' {
             { Invoke-ATHHTMLApplication -HTAFilePath Test.csv -SimulateUserDoubleClick -ErrorAction Stop } | Should -Throw
         }
 
-        It 'should indicate that the HTA runner process failed to start' {
+        It 'should indicate that the HTA runner process failed to start' -Tag 'Unit', 'T1218.005' {
             Mock Invoke-CimMethod { return @{ ReturnValue = 1 } }
 
             { Invoke-ATHHTMLApplication -ErrorAction Stop } | Should -Throw
@@ -75,7 +75,7 @@ Describe 'Invoke-ATHHTMLApplication' {
             $Result.RunnerChildProcessCommandLine | Should -BeNullOrEmpty
         }
 
-        It 'should indicate that the HTA child process failed to launch' {
+        It 'should indicate that the HTA child process failed to launch' -Tag 'Unit', 'T1218.005' {
             Mock Wait-Event { return $null }
 
             { Invoke-ATHHTMLApplication -ErrorAction Stop } | Should -Throw
@@ -98,17 +98,17 @@ Describe 'Invoke-ATHHTMLApplication' {
             $Result.RunnerChildProcessCommandLine | Should -BeNullOrEmpty
         }
 
-        It 'should not accept VBScript.Encode as a script engine when the "about" protocol handler is used' {
+        It 'should not accept VBScript.Encode as a script engine when the "about" protocol handler is used' -Tag 'Unit', 'T1218.005' {
             { Invoke-ATHHTMLApplication -InlineProtocolHandler About -ScriptEngine VBScript.Encode -ErrorAction Stop } | Should -Throw
         }
 
-        It 'should not accept JScript.Encode as a script engine when the "about" protocol handler is used' {
+        It 'should not accept JScript.Encode as a script engine when the "about" protocol handler is used' -Tag 'Unit', 'T1218.005' {
             { Invoke-ATHHTMLApplication -InlineProtocolHandler About -ScriptEngine JScript.Encode -ErrorAction Stop } | Should -Throw
         }
     }
 
     Context 'Expected artifacts and behaviors when exercising the attack technique' -Tag 'Technique', 'T1218.005' {
-        It 'should accept and execute manually-suppled WSH wscript code' {
+        It 'should accept and execute manually-suppled WSH wscript code' -Tag 'Technique', 'T1218.005' {
 
             $ScriptCode = @'
 var objShell = new ActiveXObject('Wscript.Shell');
@@ -137,7 +137,7 @@ window.close();
 
         }
 
-        It 'should append HTA content to cmd.exe and execute it' {
+        It 'should append HTA content to cmd.exe and execute it' -Tag 'Technique', 'T1218.005' {
             
             $Result = Invoke-ATHHTMLApplication -TemplatePE -TestGuid $FixedTestGuid
 
@@ -164,7 +164,7 @@ window.close();
 
         }
         
-        It 'should simulate a user double-click (ScriptEngine: <ScriptEngine>)' {
+        It 'should simulate a user double-click (ScriptEngine: <ScriptEngine>)' -Tag 'Technique', 'T1218.005' {
             
             $Result = Invoke-ATHHTMLApplication -ScriptEngine $ScriptEngine -HTAFilePath $HTAFileName -SimulateUserDoubleClick -TestGuid $FixedTestGuid
             
@@ -193,7 +193,7 @@ window.close();
             @{ScriptEngine = 'VBScript.Encode'; HTAHash = '5C437FAEF659BE0B9BFE6AEDE079CA4F85A16C5CF3B02AE06C235603A93C5C88'}
         )
 
-        It 'should permit executing from UNC paths (ScriptEngine: <ScriptEngine>)' {
+        It 'should permit executing from UNC paths (ScriptEngine: <ScriptEngine>)' -Tag 'Technique', 'T1218.005' {
             
             $Result = Invoke-ATHHTMLApplication -ScriptEngine $ScriptEngine -HTAFilePath $HTAFileName -AsLocalUNCPath -TestGuid $FixedTestGuid
             
@@ -222,7 +222,7 @@ window.close();
             @{ScriptEngine = 'VBScript.Encode'; HTAHash = '5C437FAEF659BE0B9BFE6AEDE079CA4F85A16C5CF3B02AE06C235603A93C5C88'}
         )
 
-        It 'should simulate lateral movement (ScriptEngine: <ScriptEngine>)' {
+        It 'should simulate lateral movement (ScriptEngine: <ScriptEngine>)' -Tag 'Technique', 'T1218.005' {
             
             $Result = Invoke-ATHHTMLApplication -ScriptEngine $ScriptEngine -HTAFilePath $HTAFileName -SimulateLateralMovement -TestGuid $FixedTestGuid
             
@@ -251,7 +251,7 @@ window.close();
             @{ScriptEngine = 'VBScript.Encode'; HTAHash = '5C437FAEF659BE0B9BFE6AEDE079CA4F85A16C5CF3B02AE06C235603A93C5C88'}
         )
 
-        It 'should simulate inline rundll32.exe execution (InlineProtocolHandler: <InlineProtocolHandler>, ScriptEngine: <ScriptEngine>)' {
+        It 'should simulate inline rundll32.exe execution (InlineProtocolHandler: <InlineProtocolHandler>, ScriptEngine: <ScriptEngine>)' -Tag 'Technique', 'T1218.005' {
             
             $ScriptEngineArg = @{}
 
@@ -292,7 +292,7 @@ window.close();
             @{ InlineProtocolHandler = 'About'; ScriptEngine = 'VBScript' }
         )
 
-        It 'should simulate inline mshta.exe execution (InlineProtocolHandler: <InlineProtocolHandler>, ScriptEngine: <ScriptEngine>)' {
+        It 'should simulate inline mshta.exe execution (InlineProtocolHandler: <InlineProtocolHandler>, ScriptEngine: <ScriptEngine>)' -Tag 'Technique', 'T1218.005' {
             
             $ScriptEngineArg = @{}
 

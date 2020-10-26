@@ -9,10 +9,10 @@ $Module = Import-Module $ModuleManifest -Force -ErrorAction Stop -PassThru
 
 $ExportedFunctionList = $Module.ExportedCommands.Keys
 
-Describe 'Module-wide tests' -Tags 'Module' {
+Describe 'Module-wide tests' -Tag 'Module' {
     foreach ($FunctionName in $ExportedFunctionList) {
         Context "Required exported command naming scheme for $FunctionName" {
-            It 'should have an "ATH" noun prefix' {
+            It 'should have an "ATH" noun prefix' -Tag 'Module' {
                 $FunctionInfo = Get-Item -Path Function:$FunctionName
 
                 $FunctionInfo.Noun.Substring(0, 3) | Should -BeExactly 'ATH'
@@ -20,7 +20,7 @@ Describe 'Module-wide tests' -Tags 'Module' {
         }
 
         Context "Pester test checks for $FunctionName" {
-            It 'should have test code written for the exported function' {
+            It 'should have test code written for the exported function' -Tag 'Module' {
                 $FunctionInfo = Get-Item -Path Function:$FunctionName
 
                 $FunctionFilePath = $FunctionInfo.ScriptBlock.File
@@ -50,32 +50,32 @@ Describe 'Module-wide tests' -Tags 'Module' {
             # Parse the function using AST
             $Script:AST = [Management.Automation.Language.Parser]::ParseInput((Get-Content Function:$FunctionName), [ref]$null, [ref]$null)
 
-            It 'should contain a .SYNOPSIS block' {
+            It 'should contain a .SYNOPSIS block' -Tag 'Module' {
                 $Help = Get-Help -Name $FunctionName -Full
 
                 $Help.Synopsis | Should -Not -BeNullOrEmpty
             } -TestCases @(@{ FunctionName = $FunctionName })
 
-            It 'should have a .SYNOPSIS block that ends with a well-formatted attack technique ID' {
+            It 'should have a .SYNOPSIS block that ends with a well-formatted attack technique ID' -Tag 'Module' {
                 $Help = Get-Help -Name $FunctionName -Full
 
                 $Help.Synopsis.Split("`r`n")[-1] -match '^(?-i:Technique ID: )(?<TechniqueID>\S+) (?<TechniqueDescription>\(.+\))$' | Should -BeTrue
             } -TestCases @(@{ FunctionName = $FunctionName })
 
-            It 'should contain a .DESCRIPTION block' {
+            It 'should contain a .DESCRIPTION block' -Tag 'Module' {
                 $Help = Get-Help -Name $FunctionName -Full
 
                 $Help.Description | Should -Not -BeNullOrEmpty
             } -TestCases @(@{ FunctionName = $FunctionName })
             
             # Examples
-            It 'should contain at least one .EXAMPLE block' {
+            It 'should contain at least one .EXAMPLE block' -Tag 'Module' {
                 $Help = Get-Help -Name $FunctionName -Full
 
                 @($Help.Examples.Example.Code).Count | Should -BeGreaterThan 0
             } -TestCases @(@{ FunctionName = $FunctionName })
             
-            It 'should contain a matching number of .PARAMETER blocks for all defined parameters and be documented accordingly' {
+            It 'should contain a matching number of .PARAMETER blocks for all defined parameters and be documented accordingly' -Tag 'Module' {
                 $Help = Get-Help -Name $FunctionName -Full
 
                 $HelpParameters = @($Help.Parameters.Parameter)

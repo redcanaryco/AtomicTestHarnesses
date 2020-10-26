@@ -21,15 +21,15 @@ Describe 'Start-ATHProcessUnderSpecificParent' {
     }
     
     Context 'Validating error conditions' -Tag 'Unit', 'T1134.004' {
-        It 'should fail to validate a non-existent executable path.' {
+        It 'should fail to validate a non-existent executable path.' -Tag 'Unit', 'T1134.004' {
             { Start-ATHProcessUnderSpecificParent -FilePath sdkfljhsdfjfrsdsdg.exe -CommandLine sdkfjhsdfkjds -ParentId $PID -ErrorAction Stop } | Should -Throw
         }
 
-        It 'should fail to spawn from a non-existent process' {
+        It 'should fail to spawn from a non-existent process' -Tag 'Unit', 'T1134.004' {
             { Start-ATHProcessUnderSpecificParent -ParentId ([Int]::MinValue) -ErrorAction Stop } | Should -Throw
         }
 
-        It 'should throw an exception if it fails to obtain child process information' {
+        It 'should throw an exception if it fails to obtain child process information' -Tag 'Unit', 'T1134.004' {
             Mock Get-CimInstance { return $null } -ParameterFilter { $Property.Count -eq 4 }
 
             { Start-ATHProcessUnderSpecificParent -ParentId $PID -ErrorAction Stop } | Should -Throw
@@ -37,7 +37,7 @@ Describe 'Start-ATHProcessUnderSpecificParent' {
             Should -Invoke Get-CimInstance -Times 1
         }
 
-        It 'should throw an exception if it fails to obtain parent process information' {
+        It 'should throw an exception if it fails to obtain parent process information' -Tag 'Unit', 'T1134.004' {
             Mock Get-CimInstance { return $null } -ParameterFilter { $Property.Count -eq 3 }
 
             { Start-ATHProcessUnderSpecificParent -ParentId $PID -ErrorAction Stop } | Should -Throw
@@ -47,7 +47,7 @@ Describe 'Start-ATHProcessUnderSpecificParent' {
     }
 
     Context 'Expected artifacts and behaviors when exercising the attack technique' -Tag 'Technique', 'T1134.004' {
-        It 'should execute as a child process of explorer.exe' {
+        It 'should execute as a child process of explorer.exe' -Tag 'Technique', 'T1134.004' {
             $Result = Get-Process -Name explorer | Select-Object -First 1 | Start-ATHProcessUnderSpecificParent -TestGuid $FixedTestGuid
 
             $Result | Should -Not -BeNullOrEmpty
@@ -68,7 +68,7 @@ Describe 'Start-ATHProcessUnderSpecificParent' {
             $Result
         }
 
-        It 'should execute as a child process of the current PowerShell process' {
+        It 'should execute as a child process of the current PowerShell process' -Tag 'Technique', 'T1134.004' {
             $Result = Start-ATHProcessUnderSpecificParent -ParentId $PID -TestGuid $FixedTestGuid
 
             $Result | Should -Not -BeNullOrEmpty
@@ -91,7 +91,7 @@ Describe 'Start-ATHProcessUnderSpecificParent' {
             $Result
         }
 
-        It 'should spawn a child process from a newly created notepad.exe process' {
+        It 'should spawn a child process from a newly created notepad.exe process' -Tag 'Technique', 'T1134.004' {
             $Result = Start-Process -FilePath $Env:windir\System32\notepad.exe -PassThru -ErrorAction Stop |
                 Start-ATHProcessUnderSpecificParent -FilePath powershell.exe -CommandLine '-Command Write-Host foo'
 

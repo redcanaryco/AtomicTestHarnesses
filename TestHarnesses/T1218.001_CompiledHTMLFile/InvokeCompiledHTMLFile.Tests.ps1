@@ -23,11 +23,11 @@ Describe 'Invoke-ATHCompiledHelp' {
             Get-Process -Name hh -ErrorAction SilentlyContinue | Stop-Process -Force
         }
 
-        It 'hh.exe execution should not execute notepad.exe' {
+        It 'hh.exe execution should not execute notepad.exe' -Tag 'Unit', 'T1218.001' {
             { Invoke-ATHCompiledHelp -HHFilePath "$Env:windir\System32\notepad.exe" -ErrorAction Stop } | Should -Throw
         }
 
-        It 'should not run test when a non-existent CHM path is specified' {
+        It 'should not run test when a non-existent CHM path is specified' -Tag 'Unit', 'T1218.001' {
             $BogusPath = 'C:\dsdfsiuhsdrfsawgfds'
 
             Test-Path -Path $BogusPath -PathType Container | Should -BeFalse
@@ -35,17 +35,17 @@ Describe 'Invoke-ATHCompiledHelp' {
             { Invoke-ATHCompiledHelp -CHMFilePath $BogusPath -ErrorAction Stop } | Should -Throw
         }
 
-        It "should not write to a directory that it does not have write access to: $Env:SystemDrive\" {
+        It "should not write to a directory that it does not have write access to: $Env:SystemDrive\" -Tag 'Unit', 'T1218.001' {
             { Invoke-ATHCompiledHelp -CHMFilePath "$Env:SystemDrive\Test.chm" -ErrorAction Stop } | Should -Throw
         }
 
-        It 'should indicate that the CHM runner process failed to start' {
+        It 'should indicate that the CHM runner process failed to start' -Tag 'Unit', 'T1218.001' {
             Mock Invoke-CimMethod { return @{ ReturnValue = 1 } }
 
             { Invoke-ATHCompiledHelp -ErrorAction Stop } | Should -Throw
         }
 
-        It 'should indicate that the CHM child process failed to launch' {
+        It 'should indicate that the CHM child process failed to launch' -Tag 'Unit', 'T1218.001' {
             Mock Wait-Event { return $null }
 
             { Invoke-ATHCompiledHelp -ErrorAction Stop } | Should -Throw
@@ -90,7 +90,7 @@ Describe 'Invoke-ATHCompiledHelp' {
             $Script:AlternateCHMFileName = 'Foo.chm'
         }
 
-        It 'should execute the default help topic (UseAlternateCHMName: <UseAlternateCHMName>, UseAlternateHHPath: <UseAlternateHHPath>, InfoTechStorageHandler: <InfoTechStorageHandler>)' {
+        It 'should execute the default help topic (UseAlternateCHMName: <UseAlternateCHMName>, UseAlternateHHPath: <UseAlternateHHPath>, InfoTechStorageHandler: <InfoTechStorageHandler>)' -Tag 'Technique', 'T1218.001' {
             $Arguments = @{}
 
             if ($UseAlternateCHMName) {
@@ -153,7 +153,7 @@ Describe 'Invoke-ATHCompiledHelp' {
             @{ UseAlternateCHMName = $True;  UseAlternateHHPath = $True;  InfoTechStorageHandler = 'mk:@MSITStore' }
         )
 
-        It 'should simulate a CHM doubleclick (UseAlternateCHMName: <UseAlternateCHMName>)' {
+        It 'should simulate a CHM doubleclick (UseAlternateCHMName: <UseAlternateCHMName>)' -Tag 'Technique', 'T1218.001' {
             $Arguments = @{}
 
             if ($UseAlternateCHMName) {
@@ -189,7 +189,7 @@ Describe 'Invoke-ATHCompiledHelp' {
             @{ UseAlternateCHMName = $True }
         )
 
-        It 'should execute WSH script code via specification of specific help topics (UseAlternateCHMName: <UseAlternateCHMName>, UseAlternateHHPath: <UseAlternateHHPath>, InfoTechStorageHandler: <InfoTechStorageHandler>, TopicExtension: <TopicExtension>, ScriptEngine: <ScriptEngine>)' {
+        It 'should execute WSH script code via specification of specific help topics (UseAlternateCHMName: <UseAlternateCHMName>, UseAlternateHHPath: <UseAlternateHHPath>, InfoTechStorageHandler: <InfoTechStorageHandler>, TopicExtension: <TopicExtension>, ScriptEngine: <ScriptEngine>)' -Tag 'Technique', 'T1218.001' {
             $Arguments = @{}
 
             if ($UseAlternateCHMName) {
@@ -355,7 +355,7 @@ Describe 'Invoke-ATHCompiledHelp' {
             @{ UseAlternateCHMName = $True;  UseAlternateHHPath = $True;  InfoTechStorageHandler = 'mk:@MSITStore'; TopicExtension = 'html'; ScriptEngine = 'VBScript.Encode' }
         )
 
-        It 'should execute a Shortcut command via specification of specific help topics (UseAlternateCHMName: <UseAlternateCHMName>, UseAlternateHHPath: <UseAlternateHHPath>, InfoTechStorageHandler: <InfoTechStorageHandler>, TopicExtension: <TopicExtension>)' {
+        It 'should execute a Shortcut command via specification of specific help topics (UseAlternateCHMName: <UseAlternateCHMName>, UseAlternateHHPath: <UseAlternateHHPath>, InfoTechStorageHandler: <InfoTechStorageHandler>, TopicExtension: <TopicExtension>)' -Tag 'Technique', 'T1218.001' {
             $Arguments = @{}
 
             if ($UseAlternateCHMName) {
