@@ -95,9 +95,10 @@ Specific groups of tests can be run rather than running all available tests. The
 1. `Module` - Module-wide tests designed to ensure consistency across all exported fcuntions.
 2. `Unit` - Unit tests for exported functions
 3. `Technique` - Tests that exercise specific attack technique functionality
-4. `T1134.004` - [Access Token Manipulation: Parent PID Spoofing](https://attack.mitre.org/techniques/T1134/004/)
-5. `T1218.001` - [Signed Binary Proxy Execution: Compiled HTML File](https://attack.mitre.org/techniques/T1218/001/)
-6. `T1218.005` - [Signed Binary Proxy Execution: Mshta](https://attack.mitre.org/techniques/T1218/005/)
+4. `T1059.001` - [Command and Scripting Interpreter: PowerShell](https://attack.mitre.org/techniques/T1059/001/)
+5. `T1134.004` - [Access Token Manipulation: Parent PID Spoofing](https://attack.mitre.org/techniques/T1134/004/)
+6. `T1218.001` - [Signed Binary Proxy Execution: Compiled HTML File](https://attack.mitre.org/techniques/T1218/001/)
+7. `T1218.005` - [Signed Binary Proxy Execution: Mshta](https://attack.mitre.org/techniques/T1218/005/)
 
 ## Running Tests
 

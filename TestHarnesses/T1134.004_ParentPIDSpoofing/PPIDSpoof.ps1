@@ -257,11 +257,10 @@ namespace AtomicTestHarnesses_T1134_004 {
         1,                                  # dwAttributeCount
         0,                                  # dwFlags
         [ref] $ProcThreadAttributeListSize  # lpSize
-    );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
+    )
 
-    # Throw an exception if the error code is anything other than "The data area passed to a system call is too small"
-    if (($Result -eq $False) -and ($LastError.NativeErrorCode -ne 122)) {
-        throw $LastError
+    if ($ProcThreadAttributeListSize -eq ([IntPtr]::Zero)) {
+        throw 'ProcThreadAttributeListSize failed to determine the amount of memory required.'
     }
 
     # Allocate unmanaged memory of sufficient size for the PROC_THREAD_ATTRIBUTE_LIST structure
