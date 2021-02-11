@@ -667,7 +667,7 @@ $HelpCompilerFullPath = "C:\Program Files (x86)\HTML Help Workshop\hhc.exe"
     Unregister-Event -SourceIdentifier 'ProcessSpawned'
 
     [PSCustomObject] @{
-        TechniqueID = 'T1218.005'
+        TechniqueID = 'T1218.001'
         TestSuccess = $CHMExecuted
         TestGuid = $TestGuid
         ExecutionType = $ExecutionType
