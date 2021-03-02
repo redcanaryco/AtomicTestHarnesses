@@ -9,7 +9,7 @@ Import-Module $ModuleManifest -Force -ErrorAction Stop
 
 Describe 'Invoke-ATHCompiledHelp' {
     BeforeAll {
-        $Help = Get-Help -Name Invoke-ATHHTMLApplication -Full
+        $Help = Get-Help -Name Invoke-ATHCompiledHelp -Full
     
         $ExpectedTechniqueID = $null
 
