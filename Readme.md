@@ -97,10 +97,11 @@ Specific groups of tests can be run rather than running all available tests. The
 3. `Technique` - Tests that exercise specific attack technique functionality
 4. `T1055` - [Process Injection](https://attack.mitre.org/techniques/T1055/)
 5. `T1059.001` - [Command and Scripting Interpreter: PowerShell](https://attack.mitre.org/techniques/T1059/001/)
-6. `T1134.004` - [Access Token Manipulation: Parent PID Spoofing](https://attack.mitre.org/techniques/T1134/004/)
-7. `T1218.001` - [Signed Binary Proxy Execution: Compiled HTML File](https://attack.mitre.org/techniques/T1218/001/)
-8. `T1218` - [Signed Binary Proxy Execution](https://attack.mitre.org/techniques/T1218/)
-9. `T1218.005` - [Signed Binary Proxy Execution: Mshta](https://attack.mitre.org/techniques/T1218/005/)
+6. `T1127.001` - [Trusted Developer Utilities Proxy Execution: MSBuild](https://attack.mitre.org/techniques/T1127/001/)
+7. `T1134.004` - [Access Token Manipulation: Parent PID Spoofing](https://attack.mitre.org/techniques/T1134/004/)
+8. `T1218.001` - [Signed Binary Proxy Execution: Compiled HTML File](https://attack.mitre.org/techniques/T1218/001/)
+9. `T1218` - [Signed Binary Proxy Execution](https://attack.mitre.org/techniques/T1218/)
+10. `T1218.005` - [Signed Binary Proxy Execution: Mshta](https://attack.mitre.org/techniques/T1218/005/)
 
 ## Running Tests
 

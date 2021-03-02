@@ -4,7 +4,7 @@
 RootModule = 'AtomicTestHarnesses.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.3.0.0'
+ModuleVersion = '1.4.0.0'
 
 # ID used to uniquely identify this module
 GUID = '195a1637-d4a4-4cb3-8d80-5b5d4e3e930a'
@@ -27,6 +27,7 @@ PowerShellVersion = '5.0'
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = 'Invoke-ATHHTMLApplication',
                     'Invoke-ATHCompiledHelp',
+                    'Invoke-ATHMSBuild',
                     'Invoke-ATHRemoteFXvGPUDisablementCommand',
                     'Out-ATHPowerShellCommandLineParameter',
                     'Start-ATHProcessHerpaderp',
@@ -48,6 +49,15 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+1.4.0
+-----
+Added:
+* Invoke-ATHMSBuild
+
+Improvements:
+* Invoke-ATHCompiledHelp was returning the wrong MITRE technique ID. Thanks, Mike Haag (@M_haggis) for pointing out the issue and supplying the fix!
+* Invoke-ATHCompiledHelp Pester tests were extracting the incorrect MITRE technique ID.
+
 1.3.0
 -----
 Added:
