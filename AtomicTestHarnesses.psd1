@@ -4,7 +4,7 @@
 RootModule = 'AtomicTestHarnesses.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.4.0.0'
+ModuleVersion = '1.5.0.0'
 
 # ID used to uniquely identify this module
 GUID = '195a1637-d4a4-4cb3-8d80-5b5d4e3e930a'
@@ -16,7 +16,7 @@ Author = 'Mike Haag, Jesse Brown, Matt Graeber'
 CompanyName = 'Red Canary, Inc.'
 
 # Copyright statement for this module
-Copyright = '2020 Red Canary, Inc. All rights reserved.'
+Copyright = '2021 Red Canary, Inc. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'A module to facilitate the testing of attack techniques and their corresponding procedures.'
@@ -27,6 +27,7 @@ PowerShellVersion = '5.0'
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = 'Invoke-ATHHTMLApplication',
                     'Invoke-ATHCompiledHelp',
+                    'Invoke-ATHInjectedThread',
                     'Invoke-ATHMSBuild',
                     'Invoke-ATHRemoteFXvGPUDisablementCommand',
                     'Out-ATHPowerShellCommandLineParameter',
@@ -49,6 +50,11 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+1.5.0
+-----
+Added:
+* Invoke-ATHInjectedThread
+
 1.4.0
 -----
 Added:

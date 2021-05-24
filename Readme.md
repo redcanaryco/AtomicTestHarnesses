@@ -40,6 +40,8 @@ Rather than placing the `AtomicTestHarnesses` root directory in a module path, i
 Import-Module C:\Users\Test\Desktop\AtomicTestHarnesses\AtomicTestHarnesses.psd1
 ```
 
+The -SkipPublisherCheck and -Force option is typically required for machines that only have v3.4.0 of Pester installed. That particular version of the module was signed by Microsoft to be shipped in-box, which is not the case for later versions which are community maintained and signed with a different certificate. Attempting to install the module without that option may fail.
+
 ## Exploring Exposed Functionality
 
 Upon the `AtomicTestHarnesses` module being loaded, to get a sense of what functionality is exposed, you can run the following command:
@@ -88,20 +90,23 @@ If you do not have Pester v5+, you will need to update it.
 Install-Module -Name Pester -MinimumVersion 5.0.0 -Scope CurrentUser
 ```
 
+The `-SkipPublisherCheck` and `-Force` option is typically required for machines that only have `v3.4.0` of Pester installed. That particular version of the module was signed by Microsoft to be shipped in-box, which is not the case for later versions which are community maintained and signed with a different certificate. Attempting to install the module without that option may fail.
+
 ## Implemented Test Tags
 
 Specific groups of tests can be run rather than running all available tests. The following tags are exposed:
 
-1. `Module` - Module-wide tests designed to ensure consistency across all exported fcuntions.
+1. `Module` - Module-wide tests designed to ensure consistency across all exported functions.
 2. `Unit` - Unit tests for exported functions
 3. `Technique` - Tests that exercise specific attack technique functionality
 4. `T1055` - [Process Injection](https://attack.mitre.org/techniques/T1055/)
-5. `T1059.001` - [Command and Scripting Interpreter: PowerShell](https://attack.mitre.org/techniques/T1059/001/)
-6. `T1127.001` - [Trusted Developer Utilities Proxy Execution: MSBuild](https://attack.mitre.org/techniques/T1127/001/)
-7. `T1134.004` - [Access Token Manipulation: Parent PID Spoofing](https://attack.mitre.org/techniques/T1134/004/)
-8. `T1218.001` - [Signed Binary Proxy Execution: Compiled HTML File](https://attack.mitre.org/techniques/T1218/001/)
-9. `T1218` - [Signed Binary Proxy Execution](https://attack.mitre.org/techniques/T1218/)
-10. `T1218.005` - [Signed Binary Proxy Execution: Mshta](https://attack.mitre.org/techniques/T1218/005/)
+5. `T1055.002` - [Process Injection: Portable Executable Injection](https://attack.mitre.org/techniques/T1055/002/)
+6. `T1059.001` - [Command and Scripting Interpreter: PowerShell](https://attack.mitre.org/techniques/T1059/001/)
+7. `T1127.001` - [Trusted Developer Utilities Proxy Execution: MSBuild](https://attack.mitre.org/techniques/T1127/001/)
+8. `T1134.004` - [Access Token Manipulation: Parent PID Spoofing](https://attack.mitre.org/techniques/T1134/004/)
+9. `T1218.001` - [Signed Binary Proxy Execution: Compiled HTML File](https://attack.mitre.org/techniques/T1218/001/)
+10. `T1218` - [Signed Binary Proxy Execution](https://attack.mitre.org/techniques/T1218/)
+11. `T1218.005` - [Signed Binary Proxy Execution: Mshta](https://attack.mitre.org/techniques/T1218/005/)
 
 ## Running Tests
 
