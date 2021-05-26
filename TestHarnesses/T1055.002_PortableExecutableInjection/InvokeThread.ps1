@@ -219,76 +219,77 @@ Executes injected code from a PAGE_EXECUTE_READ page instead of using default PA
     # powershell.exe -nop -Command Write-Host AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA; Start-Sleep -Seconds 2; exit
     # The AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA guid is replaced dynamically based on $TestGuid and is used to validate the successful execution of the injected code in a safe fashion.
 
-    # SHA256 Hash: A59CFA1BB8861DC1BE40AACF7DBF18FB0BDAF6519A24ABF78A0F4752E1834F45
-    # VirusTotal: https://www.virustotal.com/gui/file/a59cfa1bb8861dc1be40aacf7dbf18fb0bdaf6519a24abf78a0f4752e1834f45/details
+    # SHA256 Hash: E06AE84E0EACCCB32E8A09A664DA565E8A052D1CC9432DD5E0478470937BF5EA
+    # VirusTotal: https://www.virustotal.com/gui/file/e06ae84e0eacccb32e8a09a664da565e8a052d1cc9432dd5e0478470937bf5ea/details
 
     # The code below was generated with the following C code that was compiled in a position-indepedent fashion:
     <#
-    #define WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
 
-    #pragma warning( disable : 4201 ) // Disable warning about 'nameless struct/union'
+        #pragma warning( disable : 4201 ) // Disable warning about 'nameless struct/union'
 
-    #include "GetProcAddressWithHash.h"
-    #include "64BitHelper.h"
-    #include <windows.h>
-    #include <intrin.h>
+        #include "GetProcAddressWithHash.h"
+        #include "64BitHelper.h"
+        #include <windows.h>
+        #include <intrin.h>
 
-    typedef BOOL (WINAPI *FuncCreateProcess) (
-	    _In_opt_	LPCTSTR lpApplicationName,
-	    _Inout_opt_	LPTSTR lpCommandLine,
-	    _In_opt_	LPSECURITY_ATTRIBUTES lpProcessAttributes,
-	    _In_opt_	LPSECURITY_ATTRIBUTES lpThreadAttributes,
-	    _In_		BOOL bInheritHandles,
-	    _In_		DWORD dwCreationFlags,
-	    _In_opt_	LPVOID lpEnvironment,
-	    _In_opt_	LPCTSTR lpCurrentDirectory,
-	    _In_		LPSTARTUPINFO lpStartupInfo,
-	    _Out_		LPPROCESS_INFORMATION lpProcessInformation
-    );
+        typedef BOOL(WINAPI* FuncCreateProcess) (
+            _In_opt_	LPCTSTR lpApplicationName,
+            _Inout_opt_	LPTSTR lpCommandLine,
+            _In_opt_	LPSECURITY_ATTRIBUTES lpProcessAttributes,
+            _In_opt_	LPSECURITY_ATTRIBUTES lpThreadAttributes,
+            _In_		BOOL bInheritHandles,
+            _In_		DWORD dwCreationFlags,
+            _In_opt_	LPVOID lpEnvironment,
+            _In_opt_	LPCTSTR lpCurrentDirectory,
+            _In_		LPSTARTUPINFO lpStartupInfo,
+            _Out_		LPPROCESS_INFORMATION lpProcessInformation
+            );
 
-    typedef DWORD (WINAPI *FuncWaitForSingleObject) (
-	    _In_	HANDLE hHandle,
-	    _In_	DWORD dwMilliseconds
-    );
+        typedef DWORD(WINAPI* FuncWaitForSingleObject) (
+            _In_	HANDLE hHandle,
+            _In_	DWORD dwMilliseconds
+            );
 
-    VOID Execute( VOID )
-    {
-	    FuncCreateProcess MyCreateProcessA;
-	    FuncWaitForSingleObject MyWaitForSingleObject;
+        VOID Execute(VOID)
+        {
+            FuncCreateProcess MyCreateProcessA;
+            FuncWaitForSingleObject MyWaitForSingleObject;
 
-	    STARTUPINFO StartupInfo;
-	    PROCESS_INFORMATION ProcessInformation;
+            STARTUPINFO StartupInfo;
+            PROCESS_INFORMATION ProcessInformation;
 
-	    char cmdline[] = { 'p', 'o', 'w', 'e', 'r', 's', 'h', 'e', 'l', 'l', '.', 'e', 'x', 'e', ' ', '-', 'n', 'o', 'p', ' ', '-', 'C', 'o', 'm', 'm', 'a', 'n', 'd', ' ', 'W', 'r', 'i', 't', 'e', '-', 'H', 'o', 's', 't', ' ', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', '-', 'A', 'A', 'A', 'A', '-', 'A', 'A', 'A', 'A', '-', 'A', 'A', 'A', 'A', '-', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', ';', ' ', 'S', 't', 'a', 'r', 't', '-', 'S', 'l', 'e', 'e', 'p', ' ', '-', 'S', 'e', 'c', 'o', 'n', 'd', 's', ' ', '2', ';', ' ', 'e', 'x', 'i', 't', 0 };
+            // Hardcoded C:\ path to powershell.exe was used to support injection into processes where %PATH% is not populated.
+            // For the sake of simplicity, this is the most straightforward solution.
+            char cmdline[] = { 'C', ':', '\\', 'W', 'I', 'N', 'D', 'O', 'W', 'S', '\\', 'S', 'y', 's', 't', 'e', 'm', '3', '2', '\\', 'W', 'i', 'n', 'd', 'o', 'w', 's', 'P', 'o', 'w', 'e', 'r', 'S', 'h', 'e', 'l', 'l', '\\', 'v', '1', '.', '0', '\\', 'p', 'o', 'w', 'e', 'r', 's', 'h', 'e', 'l', 'l', '.', 'e', 'x', 'e', ' ', '-', 'n', 'o', 'p', ' ', '-', 'n', 'o', 'n', 'i', ' ', '-', 'C', 'o', 'm', 'm', 'a', 'n', 'd', ' ', 'W', 'r', 'i', 't', 'e', '-', 'H', 'o', 's', 't', ' ', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', '-', 'A', 'A', 'A', 'A', '-', 'A', 'A', 'A', 'A', '-', 'A', 'A', 'A', 'A', '-', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', ';', ' ', 'S', 't', 'a', 'r', 't', '-', 'S', 'l', 'e', 'e', 'p', ' ', '-', 'S', 'e', 'c', 'o', 'n', 'd', 's', ' ', '2', ';', ' ', 'e', 'x', 'i', 't', 0 };
 
-	    SecureZeroMemory(&StartupInfo, sizeof(StartupInfo));
-	    SecureZeroMemory(&ProcessInformation, sizeof(ProcessInformation));
+            SecureZeroMemory(&StartupInfo, sizeof(StartupInfo));
+            SecureZeroMemory(&ProcessInformation, sizeof(ProcessInformation));
 
-	    #pragma warning( push )
-	    #pragma warning( disable : 4055 ) // Ignore cast warnings
+        #pragma warning( push )
+        #pragma warning( disable : 4055 ) // Ignore cast warnings
 
-	    MyCreateProcessA =		(FuncCreateProcess) GetProcAddressWithHash( 0x863FCC79 );
-	    MyWaitForSingleObject =	(FuncWaitForSingleObject) GetProcAddressWithHash( 0x601D8708 );
+            MyCreateProcessA = (FuncCreateProcess)GetProcAddressWithHash(0x863FCC79);
 
-	    #pragma warning( pop )
+        #pragma warning( pop )
 
-	    StartupInfo.cb = 68;
+            StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
+            StartupInfo.wShowWindow = SW_HIDE;
+            StartupInfo.cb = sizeof(StartupInfo);
 
-	    MyCreateProcessA(
-		    NULL,
-		    (LPTSTR) cmdline,
-		    NULL,
-		    NULL,
-		    FALSE,
-		    0,
-		    NULL,
-		    NULL,
-		    &StartupInfo,
-		    &ProcessInformation
-	    );
-
-	    MyWaitForSingleObject( ProcessInformation.hProcess, INFINITE );
-    }
+            MyCreateProcessA(
+                NULL,
+                (LPTSTR)cmdline,
+                NULL,
+                NULL,
+                FALSE,
+                0,
+                NULL,
+                NULL,
+                &StartupInfo,
+                &ProcessInformation
+            );
+        }
     #>
     [Byte[]] $TemplatePositionIndependentCodeBytes = @(
         0x48,0x83,0xEC,0x28,0xE8,0xB7,0x07,0x00,0x00,0x48,0x83,0xC4,0x28,0xC3,0xCC,0xCC,
