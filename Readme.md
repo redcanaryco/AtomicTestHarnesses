@@ -107,6 +107,7 @@ Specific groups of tests can be run rather than running all available tests. The
 9. `T1218.001` - [Signed Binary Proxy Execution: Compiled HTML File](https://attack.mitre.org/techniques/T1218/001/)
 10. `T1218` - [Signed Binary Proxy Execution](https://attack.mitre.org/techniques/T1218/)
 11. `T1218.005` - [Signed Binary Proxy Execution: Mshta](https://attack.mitre.org/techniques/T1218/005/)
+12. `T1574.012` - [Hijack Execution Flow: COR_PROFILER](https://attack.mitre.org/techniques/T1574/012/)
 
 ## Running Tests
 
