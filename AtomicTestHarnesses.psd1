@@ -4,7 +4,7 @@
 RootModule = 'AtomicTestHarnesses.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.5.0.0'
+ModuleVersion = '1.6.0.0'
 
 # ID used to uniquely identify this module
 GUID = '195a1637-d4a4-4cb3-8d80-5b5d4e3e930a'
@@ -27,12 +27,14 @@ PowerShellVersion = '5.0'
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = 'Invoke-ATHHTMLApplication',
                     'Invoke-ATHCompiledHelp',
+                    'Invoke-ATHCorProfiler',
                     'Invoke-ATHInjectedThread',
                     'Invoke-ATHMSBuild',
                     'Invoke-ATHRemoteFXvGPUDisablementCommand',
                     'Out-ATHPowerShellCommandLineParameter',
                     'Start-ATHProcessHerpaderp',
                     'Start-ATHProcessUnderSpecificParent'
+                    
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
@@ -50,6 +52,11 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+1.6.0
+-----
+Added:
+* Invoke-ATHCorProfiler
+
 1.5.0
 -----
 Added:
