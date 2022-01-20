@@ -231,9 +231,8 @@ Explicity executes a Shortcut command embedded within a specific help topic.
     # Validate that the HH supplied is actually HH.
     $HHFileInfo = Get-Item -Path $HHFullPath -ErrorAction Stop
 
-    if ($HHFileInfo.VersionInfo.ProductName -ne 'HTML Help') {
+    if ($HHFileInfo.VersionInfo.OriginalFilename -ne 'HH.exe.mui'){
         Write-Error "The HH executable supplied is not hh.exe: $HHFullPath"
-
         return
     }
 
