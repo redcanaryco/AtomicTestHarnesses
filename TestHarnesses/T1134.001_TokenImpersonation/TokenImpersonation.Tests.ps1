@@ -50,6 +50,8 @@ Describe 'Invoke-ATHTokenImpersonation' {
             $Result.TargetExecutableFilePath    | Should -Match 'winlogon.exe'
             $Result.TargetExecutableFileHash    | Should -Not -BeNullOrEmpty
             $Result.TargetProcessId             | Should -Not -BeNullOrEmpty
+            $Result.PipeName                    | Should -BeNullOrEmpty
+            $Result.ServiceName                 | Should -BeNullOrEmpty
 
             $Result
         }
@@ -72,6 +74,8 @@ Describe 'Invoke-ATHTokenImpersonation' {
             $Result.TargetExecutableFilePath    | Should -Match 'winlogon.exe'
             $Result.TargetExecutableFileHash    | Should -Not -BeNullOrEmpty
             $Result.TargetProcessId             | Should -Not -BeNullOrEmpty
+            $Result.PipeName                    | Should -BeNullOrEmpty
+            $Result.ServiceName                 | Should -BeNullOrEmpty
 
             $Result
         }
@@ -94,6 +98,8 @@ Describe 'Invoke-ATHTokenImpersonation' {
             $Result.TargetExecutableFilePath    | Should -Match 'winlogon.exe'
             $Result.TargetExecutableFileHash    | Should -Not -BeNullOrEmpty
             $Result.TargetProcessId             | Should -Not -BeNullOrEmpty
+            $Result.PipeName                    | Should -BeNullOrEmpty
+            $Result.ServiceName                 | Should -BeNullOrEmpty
 
             $Result
         }
@@ -116,6 +122,8 @@ Describe 'Invoke-ATHTokenImpersonation' {
             $Result.TargetExecutableFilePath    | Should -Match 'lsass.exe'
             $Result.TargetExecutableFileHash    | Should -Not -BeNullOrEmpty
             $Result.TargetProcessId             | Should -Not -BeNullOrEmpty
+            $Result.PipeName                    | Should -BeNullOrEmpty
+            $Result.ServiceName                 | Should -BeNullOrEmpty
 
             $Result
         }
@@ -138,6 +146,8 @@ Describe 'Invoke-ATHTokenImpersonation' {
             $Result.TargetExecutableFilePath    | Should -Match 'lsass.exe'
             $Result.TargetExecutableFileHash    | Should -Not -BeNullOrEmpty
             $Result.TargetProcessId             | Should -Not -BeNullOrEmpty
+            $Result.PipeName                    | Should -BeNullOrEmpty
+            $Result.ServiceName                 | Should -BeNullOrEmpty
 
             $Result
         }
@@ -160,12 +170,14 @@ Describe 'Invoke-ATHTokenImpersonation' {
             $Result.TargetExecutableFilePath    | Should -Match 'lsass.exe'
             $Result.TargetExecutableFileHash    | Should -Not -BeNullOrEmpty
             $Result.TargetProcessId             | Should -Not -BeNullOrEmpty
+            $Result.PipeName                    | Should -BeNullOrEmpty
+            $Result.ServiceName                 | Should -BeNullOrEmpty
 
             $Result
         }
 
         It 'should logon user John Doe with fake credentials and impersonate impersonate user John Doe' {
-            $Result = Invoke-ATHTokenImpersonation -Credential $(New-Object System.Management.Automation.PSCredential ('JohnDoe', $(ConvertTo-SecureString 'fakecreds' -AsPlainText -Force))) -LogonType NewCredential -TestGuid $FixedTestGuid
+            $Result = Invoke-ATHTokenImpersonation -LogonToken -Credential $(New-Object System.Management.Automation.PSCredential ('JohnDoe', $(ConvertTo-SecureString 'fakecreds' -AsPlainText -Force))) -LogonType NewCredential -TestGuid $FixedTestGuid
 
             $Result | Should -Not -BeNullOrEmpty
 
@@ -182,6 +194,32 @@ Describe 'Invoke-ATHTokenImpersonation' {
             $Result.TargetExecutableFilePath    | Should -BeNullOrEmpty
             $Result.TargetExecutableFileHash    | Should -BeNullOrEmpty
             $Result.TargetProcessId             | Should -BeNullOrEmpty
+            $Result.PipeName                    | Should -BeNullOrEmpty
+            $Result.ServiceName                 | Should -BeNullOrEmpty
+
+            $Result
+        }
+
+        It ' should impersonate user SYSTEM by creating a service to call back on namedpipe - TestHarness' {
+            $Result = Invoke-ATHTokenImpersonation -NamedPipe -TestGuid $FixedTestGuid
+
+            $Result | Should -Not -BeNullOrEmpty
+
+            $Result.TechniqueID                 | Should -BeExactly $ExpectedTechniqueID 
+            $Result.TestSuccess                 | Should -BeTrue
+            $Result.TestGuid                    | Should -BeExactly $FixedTestGuid
+            $Result.TestCommand                 | Should -Not -BeNullOrEmpty
+            $Result.SourceUser                  | Should -Not -BeNullOrEmpty
+            $Result.SourceExecutableFilePath    | Should -Match 'powershell.exe'
+            $Result.SourceExecutableFileHash    | Should -Not -BeNullOrEmpty
+            $Result.SourceProcessId             | Should -Not -BeNullOrEmpty
+            $Result.GrantedRights               | Should -BeNullOrEmpty
+            $Result.ImpersonatedUser            | Should -Match 'SYSTEM'
+            $Result.TargetExecutableFilePath    | Should -BeNullOrEmpty
+            $Result.TargetExecutableFileHash    | Should -BeNullOrEmpty
+            $Result.TargetProcessId             | Should -BeNullOrEmpty
+            $Result.PipeName                    | Should -Match 'TestHarness'
+            $Result.ServiceName                 | Should -Match 'TestHarness'
 
             $Result
         }
