@@ -4,7 +4,7 @@
 RootModule = 'AtomicTestHarnesses.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.8.0.0'
+ModuleVersion = '1.9.0.0'
 
 # ID used to uniquely identify this module
 GUID = '195a1637-d4a4-4cb3-8d80-5b5d4e3e930a'
@@ -24,17 +24,23 @@ Description = 'A module to facilitate the testing of attack techniques and their
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '5.0'
 
+# Assemblies that must be loaded prior to importing this module
+RequiredAssemblies = @('TestHarnesses\T1218.007_Msiexec\Dependencies\Microsoft.Deployment.WindowsInstaller.dll')
+
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = 'Get-ATHDriverService',
+                    'Get-ATHMSI',
                     'Invoke-ATHHTMLApplication',
                     'Invoke-ATHCompiledHelp',
-                    'Invoke-ATHCorProfiler',
+                    'Invoke-ATHCORProfiler',
                     'Invoke-ATHCreateProcessWithToken',
                     'Invoke-ATHInjectedThread',
                     'Invoke-ATHMSBuild',
                     'Invoke-ATHRemoteFXvGPUDisablementCommand',
                     'Invoke-ATHTokenImpersonation',
                     'New-ATHDriverService',
+                    'Invoke-ATHMSI',
+                    'New-ATHMSI',
                     'Out-ATHPowerShellCommandLineParameter',
                     'Remove-ATHDriverService',
                     'Start-ATHProcessHerpaderp',
@@ -57,6 +63,14 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+
+1.9.0
+-----
+Added: 
+* New-ATHMSI
+* Get-ATHMSI
+* Invoke-ATHMSI
+
 1.8.0
 -----
 Added: 
