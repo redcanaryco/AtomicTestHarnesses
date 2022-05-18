@@ -105,7 +105,7 @@ Describe 'Invoke-ATHMSI' {
             $Result.RunnerProcessId                   | Should -Not -BeNullOrEmpty
             $Result.RunnerProcessName                 | Should -Not -BeNullOrEmpty
             $Result.RunnerChildProcessId              | Should -Not -BeNullOrEmpty
-            $Result.RunnerChildProcessName            | Should -Match 'MSI[A-Z0-9]{4}\.tmp'
+            $Result.RunnerChildProcessName            | Should -Match 'MSI[A-Z0-9]{2,4}\.tmp'
             $Result.RunnerChildProcessCommandLine     | Should -Not -BeNullOrEmpty
         }
 
@@ -183,7 +183,7 @@ Describe 'Invoke-ATHMSI' {
             $Result.MsiExecProcessCommandLine         | Should -BeNull
             $Result.RunnerProcessId                   | Should -Not -BeNullOrEmpty
             $Result.RunnerChildProcessId              | Should -Not -BeNullOrEmpty
-            $Result.RunnerChildProcessName            | Should -Match 'MSI[A-Z0-9]{4}\.tmp'
+            $Result.RunnerChildProcessName            | Should -Match 'MSI[A-Z0-9]{2,4}\.tmp'
             $Result.RunnerChildProcessCommandLine     | Should -Not -BeNullOrEmpty
         }
 
@@ -261,7 +261,7 @@ Describe 'Invoke-ATHMSI' {
             $Result.MsiExecProcessCommandLine         | Should -BeNull
             $Result.RunnerProcessId                   | Should -Not -BeNullOrEmpty
             $Result.RunnerChildProcessId              | Should -Not -BeNullOrEmpty
-            $Result.RunnerChildProcessName            | Should -Match 'MSI[A-Z0-9]{4}\.tmp'
+            $Result.RunnerChildProcessName            | Should -Match 'MSI[A-Z0-9]{2,4}\.tmp'
             $Result.RunnerChildProcessCommandLine     | Should -Not -BeNullOrEmpty
         }
 
@@ -313,7 +313,7 @@ Describe 'Invoke-ATHMSI' {
             $Result.MsiExecProcessCommandLine         | Should -BeNull
             $Result.RunnerProcessId                   | Should -Not -BeNullOrEmpty
             $Result.RunnerChildProcessId              | Should -Not -BeNullOrEmpty
-            $Result.RunnerChildProcessName            | Should -Match 'MSI[A-Z0-9]{4}\.tmp'
+            $Result.RunnerChildProcessName            | Should -Match 'MSI[A-Z0-9]{2,4}\.tmp'
             $Result.RunnerChildProcessCommandLine     | Should -Not -BeNullOrEmpty
         }
     }
