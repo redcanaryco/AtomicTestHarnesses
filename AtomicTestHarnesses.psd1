@@ -10,7 +10,7 @@ ModuleVersion = '1.9.0.0'
 GUID = '195a1637-d4a4-4cb3-8d80-5b5d4e3e930a'
 
 # Author of this module
-Author = 'Mike Haag, Jesse Brown, Matt Graeber, Jonathan Johnson'
+Author = 'Mike Haag, Jesse Brown, Matt Graeber, Jonathan Johnson, Jared Atkinson'
 
 # Company or vendor of this module
 CompanyName = 'Red Canary, Inc.'
@@ -34,7 +34,9 @@ FunctionsToExport = 'Get-ATHDriverService',
                     'Invoke-ATHCompiledHelp',
                     'Invoke-ATHCORProfiler',
                     'Invoke-ATHCreateProcessWithToken',
+                    'Invoke-ATHDumpLSASS',
                     'Invoke-ATHInjectedThread',
+                    'Invoke-ATHLogonUser',
                     'Invoke-ATHMSBuild',
                     'Invoke-ATHRemoteFXvGPUDisablementCommand',
                     'Invoke-ATHTokenImpersonation',
@@ -63,6 +65,12 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+
+2.0.0
+-----
+Added: 
+* Invoke-ATHDumpLSASS
+* Invoke-ATHLogonUser
 
 1.9.0
 -----
