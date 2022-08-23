@@ -4,7 +4,7 @@
 RootModule = 'AtomicTestHarnesses.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.9.0.0'
+ModuleVersion = '1.10.0.0'
 
 # ID used to uniquely identify this module
 GUID = '195a1637-d4a4-4cb3-8d80-5b5d4e3e930a'
@@ -16,7 +16,7 @@ Author = 'Mike Haag, Jesse Brown, Matt Graeber, Jonathan Johnson, Jared Atkinson
 CompanyName = 'Red Canary, Inc.'
 
 # Copyright statement for this module
-Copyright = '2021 Red Canary, Inc. All rights reserved.'
+Copyright = '2022 Red Canary, Inc. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'A module to facilitate the testing of attack techniques and their corresponding procedures.'
@@ -66,7 +66,7 @@ PrivateData = @{
         # ReleaseNotes of this module
         ReleaseNotes = @'
 
-2.0.0
+1.10.0 
 -----
 Added: 
 * Invoke-ATHDumpLSASS
