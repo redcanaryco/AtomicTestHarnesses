@@ -1,10 +1,10 @@
 ﻿@{
 
 # Script module or binary module file associated with this manifest.
-RootModule = 'AtomicTestHarnesses.psm1'
+RootModule = 'Windows\AtomicTestHarnesses.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.10.0.0'
+ModuleVersion = '1.10.1.0'
 
 # ID used to uniquely identify this module
 GUID = '195a1637-d4a4-4cb3-8d80-5b5d4e3e930a'
@@ -25,7 +25,7 @@ Description = 'A module to facilitate the testing of attack techniques and their
 PowerShellVersion = '5.0'
 
 # Assemblies that must be loaded prior to importing this module
-RequiredAssemblies = @('TestHarnesses\T1218.007_Msiexec\Dependencies\Microsoft.Deployment.WindowsInstaller.dll')
+RequiredAssemblies = @('Windows\TestHarnesses\T1218.007_Msiexec\Dependencies\Microsoft.Deployment.WindowsInstaller.dll')
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = 'Get-ATHDriverService',
@@ -65,9 +65,13 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+1.10.1
+------
+Improvements:
+* Directory refactoring
 
-1.10.0 
------
+1.10.0
+------
 Added: 
 * Invoke-ATHDumpLSASS
 * Invoke-ATHLogonUser
