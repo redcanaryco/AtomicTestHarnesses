@@ -12,7 +12,7 @@ pip install posixath
 then follow the instructions below for how to run the tests
 
 # Running the tests (simple)
-The `posixath` package contains all the code necessary to run myriad attack techniques for both Linux and MacOS. Below are a few examples of how to run the various tests. For more information run 
+The `posixath` package contains all the code necessary to run myriad attack techniques for both Linux and macOS. Below are a few examples of how to run the various tests. For more information run. If you want more examples of how to run very specific tests please refer to the documentation for that specific technique.
 ```python
 python -m posixath --help
 ```
@@ -28,14 +28,18 @@ To run a specific attack technique you need to specify the platform and the tech
 ```python
 python -m posixath linux -t T1018
 ```
-or for MacOS
+or for macOS
 ```python
 python -m posixath macos -t T1059
 ```
 
+# Documentation
+We use a variation on `mkdocs` for our documentation. All of the documentation is housed in the docs folder of the repo. They are markdown files and so can be easily viewed in github or in any standard markdown viewer. You can also use the python library `mkdocs-material` to generate a more friendly local web view of the documentation. To do so make sure you have the dev dependencies listed in the Pipfile installed. Then run `mkdocs serve` from the root directly. This will create a web server that listens on localhost and provides a nice web UI for viewing the documenation.
+
 # Advanced Usage
 You can use the Posix Atomic Test Harnesses directly from the code base as well. The following instructions will walk you through
-how to setup your environment so that you can run the tests directly from the source
+how to setup your environment so that you can run the tests directly from the source. Running tests this way allows you to use any
+tools that operate with `pytest` itself.
 
 ## pytest runner
 Pytest is used as our test runner to execute various Atomic Test Harness tests. In order to prepare your environment please run:
@@ -63,7 +67,7 @@ or
 ### Enumerate the different types of linux tests
 `pytest -v -m linux --co`
 
-### Enumerate the different types of macos tests
+### Enumerate the different types of macOS tests
 `pytest -v -m macos --co`
 
 ### Enumerate attack variations for a given technique
@@ -76,7 +80,7 @@ or
 
 `pytest -v -m linux`
 
-### Run all macos tests
+### Run all macOS tests
 `pytest -v tests/macos`
 
 or
@@ -89,5 +93,5 @@ or
 ### Run a specific attack type variation for linux
 `pytest -v -m linux -k T1548_001 -k chmod`
 
-### Run a specific attack type for macos
+### Run a specific attack type for macOS
 `pytest -v -m macos -k T1018`

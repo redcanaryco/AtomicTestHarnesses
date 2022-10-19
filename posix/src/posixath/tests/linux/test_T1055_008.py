@@ -13,9 +13,6 @@ def verify_regs(regs: ptrace.user_regs_struct):
     This is checking for registers with user mode pointers. It assumes that
     if it sees a value that begins with 0x7F0000000000 then it is a user mode
     pointer and that means it successfully got register values
-
-    TODO: This probably could be more specific. Maybe we could set the regs
-    before the call to get
     """
     if regs.rax & 0x7F0000000000 == 0x7F0000000000:
         return True

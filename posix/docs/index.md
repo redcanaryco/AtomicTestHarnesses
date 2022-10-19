@@ -1,12 +1,12 @@
 # Home
 
 ## Posix Atomic Test Harness
-This project is a suite of tests for generating high fidelity telemetry mapped to MITRE ATT&CK techniques. The project is divided in two main components i.e. the MacOS tests and the Linux tests. For each attack technique, there is an associated documentation page that will go into more detail about the tests that are being run, how to run them, the expected output, and any important things to be aware of.
+This project is a suite of tests for generating high fidelity telemetry mapped to MITRE ATT&CK techniques. The project is divided in two main components i.e. the macOS tests and the Linux tests. For each attack technique, there is an associated documentation page that will go into more detail about the tests that are being run, how to run them, the expected output, and any important things to be aware of.
 
 ## Commands
 Under the hood the poisx atomic test harnesses use pytest. Because of this some of the syntax you will see will be very similar to Pytest since we are passing some of the arguments through. Lets walk through how different levels of tests can be specified
 
-To run all the platform specific tests i.e. Linux or Macos you can use the following command
+To run all the platform specific tests i.e. Linux or macOS you can use the following command
 ```python
 python -m posixath [macos|linux]
 ```
@@ -17,7 +17,7 @@ python -m posixath [macos|linux] -t <attack_id>
 ```
 
 You can get even more specific with which tests you want to run. The first thing to know is how to view what tests are available. There is a hierarchical structure to the tests that are as follows:
-- Platform i.e. linux or macos
+- Platform i.e. linux or macOS
   - Technique
     - Group
       - Test
