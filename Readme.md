@@ -1,7 +1,8 @@
 # AtomicTestHarnesses
 
-AtomicTestHarnesses is a PowerShell module that simulates and validates attack
-technique execution.
+AtomicTestHarnesses is a library that simulates and validates attack technique
+execution. It consists of a Powershell module for running attack techniques on
+Windows and also a Python package for running on MacOS and Linux
 
 The details of a technique can vary from attack to attack; AtomicTestHarnesses
 accounts for this by allowing you to execute many variations of a technique at
