@@ -25,8 +25,8 @@ dynamic = ["version"]
 
 [project.urls]
 Documentation = "https://github.com/redcanaryco/AtomicTestHarnesses/wiki/Getting-started-on-MacOS-and-Linux"
-Issues = "https://github.com/redcanary/AtomicTestHarnesses/issues"
-Source = "https://github.com/redcanary/AtomicTestHarnesses/tree/master/posix"
+Issues = "https://github.com/redcanaryco/AtomicTestHarnesses/issues"
+Source = "https://github.com/redcanaryco/AtomicTestHarnesses/tree/master/posix"
 
 [tool.hatch.version]
 path = "src/posixath/__about__.py"
