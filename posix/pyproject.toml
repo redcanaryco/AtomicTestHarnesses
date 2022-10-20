@@ -24,8 +24,8 @@ dependencies = ["pytest", "rich", "psutil"]
 dynamic = ["version"]
 
 [project.urls]
-Documentation = "https://github.com/redcanary/AtomicTestHarnesses/tree/master/posix#readme"
-Issues = "https://github.com/redcanary/AtomicTestHarnesses/tree/master/posix/issues"
+Documentation = "https://github.com/redcanaryco/AtomicTestHarnesses/wiki/Getting-started-on-MacOS-and-Linux"
+Issues = "https://github.com/redcanary/AtomicTestHarnesses/issues"
 Source = "https://github.com/redcanary/AtomicTestHarnesses/tree/master/posix"
 
 [tool.hatch.version]
