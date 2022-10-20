@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "posixath"
+description = 'A suite of tools for simulating MITRE ATT&CK techniques for Linux and macOS'
+readme = "README.md"
+requires-python = ">=3.10"
+license = "BSD-3-Clause"
+keywords = ["atomic", "MITRE", "posix", "ATT&CK"]
+authors = [
+  { name = "Redcanary", email = "research@redcanary.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = ["pytest", "rich", "psutil"]
+dynamic = ["version"]
+
+[project.urls]
+Documentation = "https://github.com/redcanaryco/AtomicTestHarnesses/wiki/Getting-started-on-MacOS-and-Linux"
+Issues = "https://github.com/redcanary/AtomicTestHarnesses/issues"
+Source = "https://github.com/redcanary/AtomicTestHarnesses/tree/master/posix"
+
+[tool.hatch.version]
+path = "src/posixath/__about__.py"
+
+[tool.hatch.envs.default]
+dependencies = [
+  "pytest",
+  "pytest-cov",
+]
+[tool.hatch.envs.default.scripts]
+cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=posix_atomic_test_harness --cov=tests"
+no-cov = "cov --no-cov"
+
+[[tool.hatch.envs.test.matrix]]
+python = ["310", "311"]
+
+[tool.coverage.run]
+branch = true
+parallel = true
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+  "src/posixath",
+]

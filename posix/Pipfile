@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+black = "*"
+rich = "*"
+psutil = "*"
+pytest = "*"
+
+[dev-packages]
+mkdocs-material = "*"
+
+[requires]
+python_version = "3.10"
