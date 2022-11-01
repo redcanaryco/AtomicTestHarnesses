@@ -40,11 +40,11 @@ FunctionsToExport = 'Get-ATHDriverService',
                     'Invoke-ATHMSBuild',
                     'Invoke-ATHRemoteFXvGPUDisablementCommand',
                     'Invoke-ATHTokenImpersonation',
-                    'New-ATHDriverService',
+                    'New-ATHService',
                     'Invoke-ATHMSI',
                     'New-ATHMSI',
                     'Out-ATHPowerShellCommandLineParameter',
-                    'Remove-ATHDriverService',
+                    'Remove-ATHService',
                     'Start-ATHProcessHerpaderp',
                     'Start-ATHProcessUnderSpecificParent'
                     

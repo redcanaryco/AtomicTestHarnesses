@@ -416,31 +416,35 @@ function Remove-ATHService {
 <#
 .SYNOPSIS
 
-Uninstall a driver service and optionally unload the corresponding loaded driver.
+Uninstall a service and optionally unloads the corresponding loaded driver.
 
 Technique ID: T1543.003 (Create or Modify System Process: Windows Service)
 
 .DESCRIPTION
 
-Remove-ATHDriverService uninstalls a driver service and optionally unloads the corresponding loaded driver.
+Remove-ATHService uninstalls a service and optionally unloads the corresponding loaded driver.
 
 .PARAMETER ServiceName
 
-Specifies the service name of the driver service to uninstall.
+Specifies the service to uninstall.
 
-.PARAMETER Unload
+.PARAMETER DriverUnload
 
 Explicitly unload the loaded driver by calling NtUnloadDriver.
+
+.PARAMETER RegistryRemove
+
+Remove the service via Registry Deletion.
 
 .INPUTS
 
 System.ServiceProcess.ServiceController
 
-Remove-ATHDriverService accepts the output of Get-Service.
+Remove-ATHService accepts the output of Get-Service.
 
 Microsoft.Management.Infrastructure.CimInstance#root/cimv2/Win32_SystemDriver
 
-Remove-ATHDriverService accepts the output of a Win32_SystemDriver WMI object via Get-CimInstance.
+Remove-ATHService accepts the output of a Win32_SystemDriver WMI object via Get-CimInstance.
 
 .OUTPUTS
 
@@ -454,11 +458,15 @@ Outputs an object consisting of relevant uninstallation details. The following o
 
 .EXAMPLE
 
-Remove-ATHDriverService -ServiceName TestDriverService
+Remove-ATHService -ServiceName TestDriverService
 
 .EXAMPLE
 
-Remove-ATHDriverService -ServiceName TestDriverService -Unload
+Remove-ATHService -ServiceName TestDriverService -DriverUnload
+
+.EXAMPLE
+
+Remove-ATHService -ServiceName TestDriverService -RegistryRemove
 #>
 
     [CmdletBinding()]
@@ -572,13 +580,13 @@ function New-ATHService {
 <#
 .SYNOPSIS
 
-Installs a driver as a service.
+Installs a service.
 
 Technique ID: T1543.003 (Create or Modify System Process: Windows Service)
 
 .DESCRIPTION
 
-New-ATHDriverService installs a driver as a service and optionally loads it.
+New-ATHService installs a service and optionally starts it.
 
 .PARAMETER ServiceName
 
@@ -590,11 +598,11 @@ Specifies the description of the service to be created.
 
 .PARAMETER StartType
 
-Specifies how the driver service should start. Supported options are: BootStart, SystemStart, AutoStart, DemandStart, Disabled. If -StartType is not specified, AutoStart is used as the default option.
+Specifies how the service should start. Supported options are: BootStart, SystemStart, AutoStart, DemandStart, Disabled. If -StartType is not specified, DemandStart is used as the default option.
 
 .PARAMETER ServiceType
 
-Specifies the type of driver service to install: KernelDriver or FileSystemDriver. If -ServiceType is not specified, KernelDriver is used as the default option.
+Specifies the type of service to install: KernelDriver, FileSystemDriver, Win32OwnProcess, Win32ShareProcess. If -ServiceType is not specified, Win32OwnProcess is used as the default option.
 
 .PARAMETER FilePath
 
@@ -604,6 +612,10 @@ Specifies the path to the service binary.
 
 Indicates that the service is to be started immediately after installation.
 
+.PARAMETER Variant
+
+Chooses how the service creation will be performed. This can be one of the following - Win32 APIs, WMI, sc.exe, or Registry. Default is sc.exe.
+
 .OUTPUTS
 
 PSObject
@@ -611,12 +623,14 @@ PSObject
 Outputs an object consisting of relevant execution details. The following object properties may be populated:
 
 * TechniqueID - Specifies the relevant MITRE ATT&CK Technique ID.
+* TestSuccess - Specifies if the service creation was successful.
 * ServiceName - Specifies the name of the installed service. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceDisplayName - Specifies the display name of the installed service. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceStartMode - Specifies the name of the installed service. The following start modes may be returned: Boot, System, Auto, Manual, Disabled. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceState - Specifies the current state of the installed service. The following states may be returned: Stopped, Start Pending, Stop Pending, Running, Continue Pending, Pause Pending, Paused, Unknown. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceType - Specifies the type of installed service. The following types may be returned: Kernel Driver, File System Driver, Unknown. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceRegistryKey - Specifies the registry key path of the installed service. This field may not be populated if a driver is loaded that does not have a corresponding service.
+* ServiceUser - The user of that the service will run under. 
 * DriverPathFormatted - The full path to the driver formatted as driver-letter:\path\to\driver.sys
 * DriverPathUnformatted - The full, unformatted driver path. Driver paths are not standardized and can be interpreted in several ways.
 * LoadedImageBaseAddress - The loaded kernel virtual base address of the driver. This field may not be populated if the driver is not currently loaded.
@@ -625,7 +639,23 @@ Outputs an object consisting of relevant execution details. The following object
 
 .EXAMPLE
 
-New-ATHDriverService -ServiceName phymem -DisplayName 'Does driver stuff' -FilePath phymem64.sys -StartService
+New-ATHService -ServiceName phymem -DisplayName 'Does driver stuff' -ServiceType KernelDriver -FilePath phymem64.sys -StartService
+
+.EXAMPLE
+
+New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filename.exe
+
+.EXAMPLE
+
+New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filename.exe -StartService
+
+.EXAMPLE
+
+New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filename.exe -Variant Win32 -StartType DemandStart -StartService
+
+.EXAMPLE
+
+New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filename.exe -Variant sc.exe -StartType AutoStart -ServiceType Win32OwnProcess -StartService
 #>
 
     [CmdletBinding()]
@@ -646,11 +676,11 @@ New-ATHDriverService -ServiceName phymem -DisplayName 'Does driver stuff' -FileP
 
         [String]
         [ValidateSet('BootStart', 'SystemStart', 'AutoStart', 'DemandStart', 'Disabled')]
-        $StartType = 'AutoStart',
+        $StartType = 'DemandStart',
 
         [String]
         [ValidateSet('KernelDriver', 'FileSystemDriver', 'Win32OwnProcess', 'Win32ShareProcess')]
-        $ServiceType = 'KernelDriver',
+        $ServiceType = 'Win32OwnProcess',
 
         [Parameter(Mandatory)]
         [String]
@@ -734,13 +764,20 @@ New-ATHDriverService -ServiceName phymem -DisplayName 'Does driver stuff' -FileP
             'DemandStart'{$start = 3}
             'Disabled'{$start = 4}
         }
-        $null = reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName 
-        $null = reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName /v ImagePath /d $FilePath /t REG_EXPAND_SZ 
-        $null = reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName /v ErrorControl /d 1 /t REG_DWORD 
-        $null = reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName /v ObjectName /d 'LocalSystem' /t REG_SZ 
-        $null = reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName /v DisplayName /d $DisplayName /t REG_SZ 
-        $null = reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName /v Start /d $start /t REG_DWORD 
-        $null = reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName /v Type /d $ServiceTypeValue /t REG_DWORD 
+        
+        #Change to Set-ItemProperty
+        $RegCreatKey = New-Item $NewServiceRegKey
+        $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name ImagePath -Value $ServiceBinPath -Type ExpandString 
+        $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name ErrorControl -Value 1 -Type DWord 
+        $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name Type -Value $ServiceTypeValue -Type DWord 
+        $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name Start -Value $start -Type DWord 
+        $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name DisplayName -Value $DisplayName -Type String
+        if (($ServiceType -eq  'KernelDriver') -or ($ServiceType -eq 'FileSystemDriver')){
+            #Bypassing ObjectName as that will throw an error for the driver to start
+        }
+        else{
+            $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name ObjectName -Value 'LocalSystem' -Type String
+        }
         if ($StartService) {
             Write-Error "Can't start service until computer is rebooted"
         }
@@ -780,7 +817,7 @@ New-ATHDriverService -ServiceName phymem -DisplayName 'Does driver stuff' -FileP
                 $ServiceTypeValue,                                              # dwServiceType
                 ($StartType -as [AtomicTestHarnesses_T1543_003.SERVICE_START]), # dwStartType
                 0x0001,                                                         # dwErrorControl - SERVICE_ERROR_NORMAL
-                $ServiceBinPath,                                           # lpBinaryPathName
+                $ServiceBinPath,                                                # lpBinaryPathName
                 $null,                                                          # lpLoadOrderGroup
                 ([IntPtr]::Zero),                                               # lpdwTagId
                 $null,                                                          # lpDependencies
@@ -858,18 +895,18 @@ New-ATHDriverService -ServiceName phymem -DisplayName 'Does driver stuff' -FileP
             $TestSuccess = $false
         }
     
-    [PSCustomObject] @{
-        TechniqueID        = 'T1543.003'
-        TestSuccess        = $TestSuccess
-        TestCommand        = $TestCommand.Line
-        ServiceName        = $ServiceName
-        ServiceDisplayName = $ServiceInfo.DisplayName
-        ServiceStartType   = $ServiceInfo.Start
-        ServiceType        = $ServiceInfo.Type
-        ServiceState       = $ServiceState
-        ServiceImagePath   = $ServiceInfo.ImagePath
-        ServiceUser        = $ServiceInfo.ObjectName
+        [PSCustomObject] @{
+            TechniqueID        = 'T1543.003'
+            TestSuccess        = $TestSuccess
+            TestCommand        = $TestCommand.Line
+            ServiceName        = $ServiceName
+            ServiceDisplayName = $ServiceInfo.DisplayName
+            ServiceStartType   = $ServiceInfo.Start
+            ServiceType        = $ServiceInfo.Type
+            ServiceState       = $ServiceState
+            ServiceImagePath   = $ServiceInfo.ImagePath
+            ServiceUser        = $ServiceInfo.ObjectName
+        }
     }
-}
 
 }
