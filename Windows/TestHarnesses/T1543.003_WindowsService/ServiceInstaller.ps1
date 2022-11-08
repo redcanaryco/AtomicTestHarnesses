@@ -240,14 +240,17 @@ PSObject
 Outputs an object consisting of relevant execution details. The following object properties may be populated:
 
 * TechniqueID - Specifies the relevant MITRE ATT&CK Technique ID.
+* TestSuccess - Specifies if the service creation was successful.
 * ServiceName - Specifies the name of the installed service. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceDisplayName - Specifies the display name of the installed service. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceStartMode - Specifies the name of the installed service. The following start modes may be returned: Boot, System, Auto, Manual, Disabled. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceState - Specifies the current state of the installed service. The following states may be returned: Stopped, Start Pending, Stop Pending, Running, Continue Pending, Pause Pending, Paused, Unknown. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceType - Specifies the type of installed service. The following types may be returned: Kernel Driver, File System Driver, Unknown. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceRegistryKey - Specifies the registry key path of the installed service. This field may not be populated if a driver is loaded that does not have a corresponding service.
+* ServiceImagePath - Binary that the service will launch. 
 * DriverPathFormatted - The full path to the driver formatted as driver-letter:\path\to\driver.sys
 * DriverPathUnformatted - The full, unformatted driver path. Driver paths are not standardized and can be interpreted in several ways.
+* DriverFileHashSHA256 -
 * LoadedImageBaseAddress - The loaded kernel virtual base address of the driver. This field may not be populated if the driver is not currently loaded.
 * LoadedImageSize - The image size of the driver mapped in memory. This field may not be populated if the driver is not currently loaded.
 * LoadCount - The number of times the driver has been loaded in kernel memory. This field may not be populated if the driver is not currently loaded.
@@ -273,7 +276,6 @@ Get-ATHDriverService -LoadedDriverFileName cdrom.sys
         [ValidateNotNullOrEmpty()]
         $LoadedDriverFileName
     )
-
     $LoadedDrivers = Get-LoadedDriver
 
     $DriverServiceHashtable = @{}
@@ -322,13 +324,15 @@ Get-ATHDriverService -LoadedDriverFileName cdrom.sys
 
             if ($MatchingLoadedDriver) {
                 [PSCustomObject] @{
-                    TechniqueID        = 'T1543.003'
-                    ServiceName        = $ServiceWMIInstance.Name
-                    ServiceDisplayName = $ServiceWMIInstance.Description
-                    ServiceStartMode   = $ServiceWMIInstance.StartMode
-                    ServiceState       = $ServiceWMIInstance.State
-                    ServiceType        = $ServiceWMIInstance.ServiceType
-                    ServiceRegistryKey = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName"
+                    TechniqueID            = 'T1543.003'
+			        TestSuccess	           = $true
+                    ServiceName            = $ServiceWMIInstance.Name
+                    ServiceDisplayName     = $ServiceWMIInstance.Description
+                    ServiceStartMode       = $ServiceWMIInstance.StartMode
+                    ServiceState           = $ServiceWMIInstance.State
+                    ServiceType            = $ServiceWMIInstance.ServiceType
+                    ServiceRegistryKey     = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName"
+			        ServiceImagePath	   = $ResolvedDriverPath
                     DriverPathFormatted    = $ResolvedDriverPath
                     DriverPathUnformatted  = $MatchingLoadedDriver.Name
                     DriverFileHashSHA256   = $ResolvedDriverHash
@@ -339,13 +343,15 @@ Get-ATHDriverService -LoadedDriverFileName cdrom.sys
             } else {
                 # No corresponding loaded driver was found
                 [PSCustomObject] @{
-                    TechniqueID        = 'T1543.003'
-                    ServiceName        = $ServiceWMIInstance.Name
-                    ServiceDisplayName = $ServiceWMIInstance.Description
-                    ServiceStartMode   = $ServiceWMIInstance.StartMode
-                    ServiceState       = $ServiceWMIInstance.State
-                    ServiceType        = $ServiceWMIInstance.ServiceType
-                    ServiceRegistryKey = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName"
+                    TechniqueID            = 'T1543.003'
+			        TestSuccess	           = $false
+                    ServiceName            = $ServiceWMIInstance.Name
+                    ServiceDisplayName     = $ServiceWMIInstance.Description
+                    ServiceStartMode       = $ServiceWMIInstance.StartMode
+                    ServiceState           = $ServiceWMIInstance.State
+                    ServiceType            = $ServiceWMIInstance.ServiceType
+                    ServiceRegistryKey     = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName"
+			        ServiceImagePath	   = $ResolvedDriverPath
                     DriverPathFormatted    = $ResolvedDriverPath
                     DriverPathUnformatted  = $UnformattedDriverPath
                     DriverFileHashSHA256   = $ResolvedDriverHash
@@ -374,13 +380,15 @@ Get-ATHDriverService -LoadedDriverFileName cdrom.sys
                         $ServiceWMIInstance = Get-CimInstance -ClassName Win32_SystemDriver -Filter "Name = '$MatchingServiceName'"
 
                         [PSCustomObject] @{
-                            TechniqueID        = 'T1543.003'
-                            ServiceName        = $MatchingServiceName
-                            ServiceDisplayName = $ServiceWMIInstance.Description
-                            ServiceStartMode   = $ServiceWMIInstance.StartMode
-                            ServiceState       = $ServiceWMIInstance.State
-                            ServiceType        = $ServiceWMIInstance.ServiceType
-                            ServiceRegistryKey = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$MatchingServiceName"
+                            TechniqueID            = 'T1543.003'
+                            TestSuccess	           = $true
+                            ServiceName            = $ServiceWMIInstance.Name
+                            ServiceDisplayName     = $ServiceWMIInstance.Description
+                            ServiceStartMode       = $ServiceWMIInstance.StartMode
+                            ServiceState           = $ServiceWMIInstance.State
+                            ServiceType            = $ServiceWMIInstance.ServiceType
+                            ServiceRegistryKey     = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName"
+                            ServiceImagePath	   = $ImagePath
                             DriverPathFormatted    = $ResolvedDriverPath
                             DriverPathUnformatted  = $_.Name
                             DriverFileHashSHA256   = $ResolvedDriverHash
@@ -392,13 +400,15 @@ Get-ATHDriverService -LoadedDriverFileName cdrom.sys
                 } else {
                     # No corresponding service was found.
                     [PSCustomObject] @{
-                        TechniqueID        = 'T1543.003'
-                        ServiceName        = $null
-                        ServiceDisplayName = $null
-                        ServiceStartMode   = $null
-                        ServiceState       = $null
-                        ServiceType        = $null
-                        ServiceRegistryKey = $null
+                        TechniqueID            = 'T1543.003'
+                        TestSuccess            = $false
+                        ServiceName            = $null
+                        ServiceDisplayName     = $null
+                        ServiceStartMode       = $null
+                        ServiceState           = $null
+                        ServiceType            = $null
+                        ServiceRegistryKey     = $null
+                        ServiceImagePath	   = $null
                         DriverPathFormatted    = $ResolvedDriverPath
                         DriverPathUnformatted  = $_.Name
                         DriverFileHashSHA256   = $ResolvedDriverHash
@@ -630,9 +640,10 @@ Outputs an object consisting of relevant execution details. The following object
 * ServiceState - Specifies the current state of the installed service. The following states may be returned: Stopped, Start Pending, Stop Pending, Running, Continue Pending, Pause Pending, Paused, Unknown. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceType - Specifies the type of installed service. The following types may be returned: Kernel Driver, File System Driver, Unknown. This field may not be populated if a driver is loaded that does not have a corresponding service.
 * ServiceRegistryKey - Specifies the registry key path of the installed service. This field may not be populated if a driver is loaded that does not have a corresponding service.
-* ServiceUser - The user of that the service will run under. 
+* ServiceImagePath - Binary that the service will launch. 
 * DriverPathFormatted - The full path to the driver formatted as driver-letter:\path\to\driver.sys
 * DriverPathUnformatted - The full, unformatted driver path. Driver paths are not standardized and can be interpreted in several ways.
+* DriverFileHashSHA256 -
 * LoadedImageBaseAddress - The loaded kernel virtual base address of the driver. This field may not be populated if the driver is not currently loaded.
 * LoadedImageSize - The image size of the driver mapped in memory. This field may not be populated if the driver is not currently loaded.
 * LoadCount - The number of times the driver has been loaded in kernel memory. This field may not be populated if the driver is not currently loaded.
@@ -643,7 +654,7 @@ New-ATHService -ServiceName phymem -DisplayName 'Does driver stuff' -ServiceType
 
 .EXAMPLE
 
-New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filename.exe
+New-ATHService -ServiceName TestService -DisplayName TestService 
 
 .EXAMPLE
 
@@ -682,10 +693,11 @@ New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filen
         [ValidateSet('KernelDriver', 'FileSystemDriver', 'Win32OwnProcess', 'Win32ShareProcess')]
         $ServiceType = 'Win32OwnProcess',
 
-        [Parameter(Mandatory)]
         [String]
-        [ValidateScript({Test-Path -Path $_ -PathType Leaf})]
         $FilePath,
+
+        [Switch]
+        $DeleteServiceBinary,
 
         [Switch]
         $StartService
@@ -694,15 +706,26 @@ New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filen
     $ServicesRegKey = 'HKLM:\SYSTEM\CurrentControlSet\Services'
     $NewServiceRegKey = Join-Path -Path $ServicesRegKey -ChildPath $ServiceName
     $ServiceRegistryKey = $null
-    $TestCommand = $MyInvocation
-
-    # Resolve the full service binary path
-    $ServiceBinPath = Resolve-Path -Path $FilePath -ErrorAction Stop
-
-    Write-Verbose "Requesting service control manager handle with SC_MANAGER_CONNECT access."
+    if(([string]::IsNullOrEmpty($FilePath)) -and (($ServiceType -eq 'Win32OwnProcess') -or ($ServiceType -eq 'Win32ShareProcess'))){
+        Add-Type -OutputAssembly ATHService.exe -TypeDefinition @'
+                        public class Test {
+                            public static void Main() {
+                                System.Threading.Thread.Sleep(3000);
+                            }
+                        }
+'@
+    
+        $ServiceBinPath = Resolve-Path ATHService.exe -ErrorAction Stop
+        }
+    else{
+        # Resolve the full service binary path
+        $ServiceBinPath = Resolve-Path -Path $FilePath -ErrorAction Stop
+    }
 
     switch($Variant) {
        'sc.exe'{
+        $ServiceInfo = Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\$ServiceName\ -ErrorAction Ignore
+        if([string]::IsNullOrEmpty($ServiceInfo)){
         #Updating values to match: https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/sc-create
            switch($ServiceType){
                 'KernelDriver' {$service='kernel'}
@@ -717,12 +740,25 @@ New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filen
                 'DemandStart'{$start = 'demand'}
                 'Disabled'{$start = 'disabled'}
             }
-
-       $null = sc.exe create $ServiceName binpath= $FilePath start= $start displayname= $DisplayName type= $service
-
-       if ($StartService) {
-        $null = sc.exe start $ServiceName
-    }
+        $ProcessStartup = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly
+        $ProcessStartupInstance = Get-CimInstance -InputObject $ProcessStartup
+        $ProcessStartupInstance.ShowWindow = [UInt16] 0
+        $ProcStartResult = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = "sc.exe create $ServiceName binpath= $ServiceBinPath.Path start= $start displayname= $DisplayName type= $service"; ProcessStartupInformation = $ProcessStartupInstance }
+        if($ProcStartResult.ReturnValue -ne 0){
+            Write-Error "sc.exe creation failed"
+            return
+        }
+        if ($StartService) {
+            $ProcessStartup = New-CimInstance -ClassName Win32_ProcessStartup -ClientOnly
+            $ProcessStartupInstance = Get-CimInstance -InputObject $ProcessStartup
+            $ProcessStartupInstance.ShowWindow = [UInt16] 0
+            $ProcStartResult = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = "sc.exe start $ServiceName"; ProcessStartupInformation = $ProcessStartupInstance }
+            }
+        }
+        else{
+            Write-Error "Service already exists"
+            return
+        }
 
        }
 
@@ -741,9 +777,10 @@ New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filen
                 'DemandStart'{$start = 'Manual'}
                 'Disabled'{$start = 'Disabled'}
             }
-       $ResultWMI = Invoke-CimMethod -ClassName Win32_Service -MethodName Create -Arguments @{Name= $ServiceName; DisplayName= $DisplayName; PathName= $FilePath; StartMode= $start; ServiceType = ([Byte] $ServiceTypeValue)}
+       $ResultWMI = Invoke-CimMethod -ClassName Win32_Service -MethodName Create -Arguments @{Name= $ServiceName; DisplayName= $DisplayName; PathName= $ServiceBinPath.Path; StartMode= $start; ServiceType = ([Byte] $ServiceTypeValue)}
        if($ResultWMI.ReturnValue -ne 0){
         Write-Error "Service failed to create via WMI. Error code: $($ResultWMI.ReturnValue)"
+        return
        }
        if ($StartService) {
         $Service = (Get-WmiObject -Class Win32_Service -Filter "Name='$($ServiceName)'").InvokeMethod("StartService",$null)
@@ -751,39 +788,47 @@ New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filen
     }
 
        'Registry'{
-        switch ($ServiceType) {
-            'KernelDriver'      { $ServiceTypeValue = 1}
-            'FileSystemDriver'  { $ServiceTypeValue = 2}
-            'Win32OwnProcess'   { $ServiceTypeValue = 16}
-            'Win32ShareProcess' { $ServiceTypeValue = 32}
-        }
-        switch($StartType){
-            'AutoStart'{$start = 2}
-            'BootStart'{$start = 0}
-            'SystemStart'{$start = 1}
-            'DemandStart'{$start = 3}
-            'Disabled'{$start = 4}
-        }
-        
-        #Change to Set-ItemProperty
-        $RegCreatKey = New-Item $NewServiceRegKey
-        $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name ImagePath -Value $ServiceBinPath -Type ExpandString 
-        $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name ErrorControl -Value 1 -Type DWord 
-        $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name Type -Value $ServiceTypeValue -Type DWord 
-        $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name Start -Value $start -Type DWord 
-        $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name DisplayName -Value $DisplayName -Type String
-        if (($ServiceType -eq  'KernelDriver') -or ($ServiceType -eq 'FileSystemDriver')){
-            #Bypassing ObjectName as that will throw an error for the driver to start
+        $ServiceInfo = Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\$ServiceName\ -ErrorAction Ignore
+        if([string]::IsNullOrEmpty($ServiceInfo)){
+            switch ($ServiceType) {
+                'KernelDriver'      { $ServiceTypeValue = 1}
+                'FileSystemDriver'  { $ServiceTypeValue = 2}
+                'Win32OwnProcess'   { $ServiceTypeValue = 16}
+                'Win32ShareProcess' { $ServiceTypeValue = 32}
+            }
+            switch($StartType){
+                'AutoStart'{$start = 2}
+                'BootStart'{$start = 0}
+                'SystemStart'{$start = 1}
+                'DemandStart'{$start = 3}
+                'Disabled'{$start = 4}
+            }
+            
+            
+            $RegCreatKey = New-Item $NewServiceRegKey
+            $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name ImagePath -Value $ServiceBinPath.Path -Type ExpandString 
+            $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name ErrorControl -Value 1 -Type DWord 
+            $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name Type -Value $ServiceTypeValue -Type DWord 
+            $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name Start -Value $start -Type DWord 
+            $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name DisplayName -Value $DisplayName -Type String
+            if (($ServiceType -eq  'KernelDriver') -or ($ServiceType -eq 'FileSystemDriver')){
+                #Bypassing ObjectName as that will throw an error for the driver to start
+            }
+            else{
+                $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name ObjectName -Value 'LocalSystem' -Type String
+            }
+            if ($StartService) {
+                Write-Error "Can't start service until computer is rebooted"
+            }
         }
         else{
-            $RegSetValue = New-ItemProperty -Path $NewServiceRegKey -Name ObjectName -Value 'LocalSystem' -Type String
-        }
-        if ($StartService) {
-            Write-Error "Can't start service until computer is rebooted"
+            Write-Error "Service already exists"
+            return
         }
     }   
         
        'Win32' { 
+            Write-Verbose "Requesting service control manager handle with SC_MANAGER_CONNECT access."
             # Get a handle to the service control manager requesting the minimum possible access to create a service: SC_MANAGER_CREATE_SERVICE (0x0002)
             $SCHandle = [AtomicTestHarnesses_T1543_003.ProcessNativeMethods]::OpenSCManager(
                 $null,                                                    # lpMachineName
@@ -817,7 +862,7 @@ New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filen
                 $ServiceTypeValue,                                              # dwServiceType
                 ($StartType -as [AtomicTestHarnesses_T1543_003.SERVICE_START]), # dwStartType
                 0x0001,                                                         # dwErrorControl - SERVICE_ERROR_NORMAL
-                $ServiceBinPath,                                                # lpBinaryPathName
+                $ServiceBinPath.Path,                                                # lpBinaryPathName
                 $null,                                                          # lpLoadOrderGroup
                 ([IntPtr]::Zero),                                               # lpdwTagId
                 $null,                                                          # lpDependencies
@@ -875,38 +920,87 @@ New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filen
             $null = [AtomicTestHarnesses_T1543_003.ProcessNativeMethods]::CloseServiceHandle($SCHandle)
            }
     }
-
-    if (($ServiceType -eq  'KernelDriver') -or ($ServiceType -eq 'FileSystemDriver')){
-        Get-ATHDriverService -ServiceName $ServiceName
+    if($DeleteServiceBinary) {
+        $null = Remove-Item $ServiceBinPath -Force -ErrorAction SilentlyContinue
     }
-    else{
-        $ServiceInfo = Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\$ServiceName\ -ErrorAction Ignore
-        if ($null -ne $ServiceInfo){
-            $TestSuccess = $true
-            $ServiceWMIInstance = Get-CimInstance Win32_Service -Filter "Name = '$ServiceName'" | Select-Object -First 1
-            if($null -eq $ServiceWMIInstance){
-                $ServiceState = 'Stopped'
+    switch ($ServiceType){
+
+        'Win32OwnProcess'{
+            Start-Sleep 1
+            $ServiceInfo = Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\$ServiceName\ -ErrorAction Ignore
+            if ($null -ne $ServiceInfo){
+                $TestSuccess = $true
+                $ServiceWMIInstance = Get-CimInstance Win32_Service -Filter "Name = '$ServiceName'" | Select-Object -First 1
+                if($null -eq $ServiceWMIInstance){
+                    $ServiceState = 'Stopped'
+                }
+                else{
+                    $ServiceState = $ServiceWMIInstance.State
+                }
             }
-            else{
-                $ServiceState = $ServiceWMIInstance.State
+            else { 
+                $TestSuccess = $false
             }
-        }
-        else{
-            $TestSuccess = $false
+            
+            [PSCustomObject] @{
+            TechniqueID             = 'T1543.003'
+            TestSuccess            = $TestSuccess
+            ServiceName            = $ServiceName
+            ServiceDisplayName     = $ServiceInfo.DisplayName
+            ServiceStartMode       = $ServiceInfo.Start
+            ServiceState           = $ServiceState
+            ServiceType            = $ServiceInfo.Type
+            ServiceRegistryKey    = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName"
+            ServiceImagePath       = $ServiceInfo.ImagePath
+            DriverPathFormatted    = $null
+            DriverPathUnformatted  = $null
+            DriverFileHashSHA256   = $null
+            LoadedImageBaseAddress = $null
+            LoadedImageSize        = $null
+            LoadCount              = $null
+            }
         }
     
-        [PSCustomObject] @{
-            TechniqueID        = 'T1543.003'
-            TestSuccess        = $TestSuccess
-            TestCommand        = $TestCommand.Line
-            ServiceName        = $ServiceName
-            ServiceDisplayName = $ServiceInfo.DisplayName
-            ServiceStartType   = $ServiceInfo.Start
-            ServiceType        = $ServiceInfo.Type
-            ServiceState       = $ServiceState
-            ServiceImagePath   = $ServiceInfo.ImagePath
-            ServiceUser        = $ServiceInfo.ObjectName
+         'Win32ShareProcess'{
+            Start-Sleep 1
+            $ServiceInfo = Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\$ServiceName\ -ErrorAction Ignore
+            if ($null -ne $ServiceInfo){
+                $TestSuccess = $true
+                $ServiceWMIInstance = Get-CimInstance Win32_Service -Filter "Name = '$ServiceName'" | Select-Object -First 1
+                if($null -eq $ServiceWMIInstance){
+                    $ServiceState = 'Stopped'
+                }
+                else{
+                    $ServiceState = $ServiceWMIInstance.State
+                }
+            }
+            else { $TestSuccess = $false}
+            
+            [PSCustomObject] @{
+            TechniqueID             = 'T1543.003'
+            TestSuccess            = $TestSuccess
+            ServiceName            = $ServiceName
+            ServiceDisplayName     = $ServiceInfo.DisplayName
+            ServiceStartMode       = $ServiceInfo.Start
+            ServiceState           = $ServiceState
+            ServiceType            = $ServiceInfo.Type
+            ServiceRegistryKey    = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\$ServiceName"
+            ServiceImagePath       = $ServiceInfo.ImagePath
+            DriverPathFormatted    = $null
+            DriverPathUnformatted  = $null
+            DriverFileHashSHA256   = $null
+            LoadedImageBaseAddress = $null
+            LoadedImageSize        = $null
+            LoadCount              = $null
+                }
+            }
+    
+        'KernelDriver'{
+            Get-ATHDriverService -ServiceName $ServiceName
+        }
+        'FileSystemDriver'{
+            Get-ATHDriverService -ServiceName $ServiceName
+            }
+        
         }
     }
-
-}

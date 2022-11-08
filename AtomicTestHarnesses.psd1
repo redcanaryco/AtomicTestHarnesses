@@ -66,7 +66,7 @@ PrivateData = @{
         # ReleaseNotes of this module
         ReleaseNotes = @'
 
-1.11
+1.11.0
 ------
 Improvements:
 * Changed New-ATHDriverService to New-ATHService
