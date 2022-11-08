@@ -238,7 +238,6 @@ Describe 'Remove-ATHService' {
 
         It 'should remove RegATHService via manual registry removal' {
                 $Result =  Remove-ATHService -ServiceName RegATHService -RegistryRemove
-                $Global:foo = $Result
                 $Result | Should -Not -BeNullOrEmpty
 
                 $Result.TechniqueID     | Should -BeExactly $ExpectedTechniqueID
