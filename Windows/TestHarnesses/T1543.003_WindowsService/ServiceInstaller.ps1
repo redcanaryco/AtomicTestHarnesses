@@ -432,7 +432,7 @@ Technique ID: T1543.003 (Create or Modify System Process: Windows Service)
 
 .DESCRIPTION
 
-Remove-ATHService uninstalls a service and optionally unloads the corresponding loaded driver.
+Remove-ATHDriverService uninstalls a service and optionally unloads the corresponding loaded driver.
 
 .PARAMETER ServiceName
 
@@ -450,11 +450,11 @@ Remove the service via Registry Deletion.
 
 System.ServiceProcess.ServiceController
 
-Remove-ATHService accepts the output of Get-Service.
+Remove-ATHDriverService accepts the output of Get-Service.
 
 Microsoft.Management.Infrastructure.CimInstance#root/cimv2/Win32_SystemDriver
 
-Remove-ATHService accepts the output of a Win32_SystemDriver WMI object via Get-CimInstance.
+Remove-ATHDriverService accepts the output of a Win32_SystemDriver WMI object via Get-CimInstance.
 
 .OUTPUTS
 
@@ -472,11 +472,11 @@ Remove-ATHService -ServiceName TestDriverService
 
 .EXAMPLE
 
-Remove-ATHService -ServiceName TestDriverService -DriverUnload
+Remove-ATHDriverService -ServiceName TestDriverService -DriverUnload
 
 .EXAMPLE
 
-Remove-ATHService -ServiceName TestDriverService -RegistryRemove
+Remove-ATHDriverService -ServiceName TestDriverService -RegistryRemove
 #>
 
     [CmdletBinding()]
@@ -596,7 +596,7 @@ Technique ID: T1543.003 (Create or Modify System Process: Windows Service)
 
 .DESCRIPTION
 
-New-ATHService installs a service and optionally starts it.
+New-ATHDriverService installs a service and optionally starts it.
 
 .PARAMETER ServiceName
 
@@ -650,23 +650,23 @@ Outputs an object consisting of relevant execution details. The following object
 
 .EXAMPLE
 
-New-ATHService -ServiceName phymem -DisplayName 'Does driver stuff' -ServiceType KernelDriver -FilePath phymem64.sys -StartService
+New-ATHDriverService -ServiceName phymem -DisplayName 'Does driver stuff' -ServiceType KernelDriver -FilePath phymem64.sys -StartService
 
 .EXAMPLE
 
-New-ATHService -ServiceName TestService -DisplayName TestService 
+New-ATHDriverService -ServiceName TestService -DisplayName TestService 
 
 .EXAMPLE
 
-New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filename.exe -StartService
+New-ATHDriverService -ServiceName TestService -DisplayName TestService -FilePath filename.exe -StartService
 
 .EXAMPLE
 
-New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filename.exe -Variant Win32 -StartType DemandStart -StartService
+New-ATHDriverService -ServiceName TestService -DisplayName TestService -FilePath filename.exe -Variant Win32 -StartType DemandStart -StartService
 
 .EXAMPLE
 
-New-ATHService -ServiceName TestService -DisplayName TestService -FilePath filename.exe -Variant sc.exe -StartType AutoStart -ServiceType Win32OwnProcess -StartService
+New-ATHDriverService -ServiceName TestService -DisplayName TestService -FilePath filename.exe -Variant sc.exe -StartType AutoStart -ServiceType Win32OwnProcess -StartService
 #>
 
     [CmdletBinding()]
