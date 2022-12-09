@@ -36,7 +36,9 @@ def osa_shell_path(pytestconfig: pytest.Config):
 @pytest.mark.macos
 class TestAppleScript:
     # Path to the library directory containing supporting resources for this AtomicTestHarness execution.
-    __LIB_DIR = Path(abspath(getsourcefile(lambda: 0))).parent.joinpath("library", "T1059_002")
+    __LIB_DIR = Path(abspath(getsourcefile(lambda: 0))).parent.joinpath(
+        "library", "T1059_002"
+    )
     __CHMOD_744: int = 0o744
 
     def test_nsapplescript(self, osascript_path: Path) -> None:
@@ -57,9 +59,14 @@ class TestAppleScript:
         - You can infer OSA code execution by watching for ES_EVENT_TYPE_NOTIFY_MMAP events. Processes which map
           scripting additions / JavaScript / AppleScript components into memory are likely utilizing this API.
         """
-        nsapplescript_source_path: Path = self.__LIB_DIR.joinpath("nsapplescript_example.swift").resolve()
-        script_path: Path = self.__LIB_DIR.joinpath(
-            "whoami.scpt").resolve() if osascript_path is None else osascript_path
+        nsapplescript_source_path: Path = self.__LIB_DIR.joinpath(
+            "nsapplescript_example.swift"
+        ).resolve()
+        script_path: Path = (
+            self.__LIB_DIR.joinpath("whoami.scpt").resolve()
+            if osascript_path is None
+            else osascript_path
+        )
 
         if not os.path.isfile(nsapplescript_source_path):
             assert False, "Swift source code file does not exist!"
@@ -68,7 +75,7 @@ class TestAppleScript:
 
         # Load the AppleScript we're going to run and execute the technique
         try:
-            with open(script_path, 'r') as script_dir_fd:
+            with open(script_path, "r") as script_dir_fd:
                 loaded_applescript: str = " ".join(script_dir_fd.readlines())
 
             # Basic check to make sure we have a Swift source file
@@ -76,9 +83,14 @@ class TestAppleScript:
                 assert False, "File is not Swift source code."
 
             # Compile the Swift source file.
-            destination_path: Path = self.__LIB_DIR.joinpath("nsapplescript_example").resolve()
-            swift_compile_result: StandardizedCompletedProcess = DarwinSTDLib.compile_swift(
-                nsapplescript_source_path, str(destination_path))
+            destination_path: Path = self.__LIB_DIR.joinpath(
+                "nsapplescript_example"
+            ).resolve()
+            swift_compile_result: StandardizedCompletedProcess = (
+                DarwinSTDLib.compile_swift(
+                    nsapplescript_source_path, str(destination_path)
+                )
+            )
 
             # Check to make sure compilation was successful
             returncode: int = swift_compile_result.return_code
@@ -94,16 +106,17 @@ class TestAppleScript:
                 if not DarwinSTDLib.make_file_executable(destination_path):
                     assert False, "Failed to make the NSAppleScript example executable!"
 
-            execution_result: dict = self.default_executer([destination_path], str(script_path),
-                                                           applescript=loaded_applescript)
-
-            # Pretty print the results
-            rich.print_json(
-                json.dumps(execution_result, indent=4, sort_keys=True)
+            execution_result: dict = self.default_executer(
+                [destination_path], str(script_path), applescript=loaded_applescript
             )
 
+            # Pretty print the results
+            rich.print_json(json.dumps(execution_result, indent=4, sort_keys=True))
+
             # Was it a success?
-            assert execution_result is not None and execution_result["result"] == "success"
+            assert (
+                execution_result is not None and execution_result["result"] == "success"
+            )
         except FileNotFoundError as fnfe:
             assert False, f"File not found:\n{fnfe}"
 
@@ -123,8 +136,11 @@ class TestAppleScript:
         - Execution of the `osascript` binary will take place and any command line arguments will also be visible.
         - This is the most trivial case to detect.
         """
-        script_path: Path = self.__LIB_DIR.joinpath(
-            "whoami.scpt").resolve() if osascript_path is None else osascript_path
+        script_path: Path = (
+            self.__LIB_DIR.joinpath("whoami.scpt").resolve()
+            if osascript_path is None
+            else osascript_path
+        )
         if not os.path.isfile(script_path):
             assert False, "Script does not exist!"
         osascript_bin_path = Path("/usr/bin/osascript")
@@ -132,31 +148,38 @@ class TestAppleScript:
 
         # First load the AppleScript we're going to run for the script load
         try:
-            with open(script_path, 'r') as script_dir_fd:
+            with open(script_path, "r") as script_dir_fd:
                 loaded_applescript: str = " ".join(script_dir_fd.readlines())
             # 1. Execute the script load technique variation
-            script_load_result: dict = self.default_executer([osascript_bin_path, str(script_path)], "",
-                                                             applescript=loaded_applescript)
+            script_load_result: dict = self.default_executer(
+                [osascript_bin_path, str(script_path)],
+                "",
+                applescript=loaded_applescript,
+            )
 
             # Pretty print the results from the script load
-            rich.print_json(
-                json.dumps(script_load_result, indent=4, sort_keys=True)
-            )
+            rich.print_json(json.dumps(script_load_result, indent=4, sort_keys=True))
 
             # Was it a success?
-            assert script_load_result is not None and script_load_result["result"] == "success"
+            assert (
+                script_load_result is not None
+                and script_load_result["result"] == "success"
+            )
 
             # 2. Execute AppleScript directly at the command line
-            cmdl_args_result: dict = self.default_executer([osascript_bin_path, "-e", whoami_cmdl], "",
-                                                           applescript=loaded_applescript)
-
-            # Pretty print the results from the command line arguments
-            rich.print_json(
-                json.dumps(cmdl_args_result, indent=4, sort_keys=True)
+            cmdl_args_result: dict = self.default_executer(
+                [osascript_bin_path, "-e", whoami_cmdl],
+                "",
+                applescript=loaded_applescript,
             )
 
+            # Pretty print the results from the command line arguments
+            rich.print_json(json.dumps(cmdl_args_result, indent=4, sort_keys=True))
+
             # Was it a success?
-            assert cmdl_args_result is not None and cmdl_args_result["result"] == "success"
+            assert (
+                cmdl_args_result is not None and cmdl_args_result["result"] == "success"
+            )
         except FileNotFoundError as fnfe:
             assert False, f"File not found:\n{fnfe}"
 
@@ -172,7 +195,11 @@ class TestAppleScript:
         - Execution of the `osascript` binary will take place and any command line arguments will also be visible.
         - The full script content on products supporting script loads
         """
-        script_path: Path = self.__LIB_DIR.joinpath("whoami.sh").resolve() if osa_shell_path is None else osa_shell_path
+        script_path: Path = (
+            self.__LIB_DIR.joinpath("whoami.sh").resolve()
+            if osa_shell_path is None
+            else osa_shell_path
+        )
         if not os.path.isfile(script_path):
             assert False, "Script does not exist!"
         # Check that it's a valid shell script
@@ -190,17 +217,19 @@ class TestAppleScript:
 
         # Load the AppleScript we're going to execute and execute the technique
         try:
-            with open(script_path, 'r') as script_fd:
+            with open(script_path, "r") as script_fd:
                 loaded_applescript: str = " ".join(script_fd.readlines()[1:])
-            execution_result: dict = self.default_executer([script_path], "", applescript=loaded_applescript)
-
-            # Pretty print the results
-            rich.print_json(
-                json.dumps(execution_result, indent=4, sort_keys=True)
+            execution_result: dict = self.default_executer(
+                [script_path], "", applescript=loaded_applescript
             )
 
+            # Pretty print the results
+            rich.print_json(json.dumps(execution_result, indent=4, sort_keys=True))
+
             # Was it a success?
-            assert execution_result is not None and execution_result["result"] == "success"
+            assert (
+                execution_result is not None and execution_result["result"] == "success"
+            )
         except FileNotFoundError as fnfe:
             assert False, f"File not found:\n{fnfe}"
 
@@ -222,21 +251,32 @@ class TestAppleScript:
         - You can infer OSA code execution by watching for ES_EVENT_TYPE_NOTIFY_MMAP events. Processes which map
           scripting additions / JavaScript / AppleScript components into memory are applets.
         """
-        applet_source_path: Path = self.__LIB_DIR.joinpath(
-            "whoami.scpt").resolve() if osascript_path is None else osascript_path
+        applet_source_path: Path = (
+            self.__LIB_DIR.joinpath("whoami.scpt").resolve()
+            if osascript_path is None
+            else osascript_path
+        )
         if not os.path.isfile(applet_source_path):
             assert False, "Script does not exist!"
-        resulting_applet_path: Path = self.__LIB_DIR.joinpath("example_applet.app").resolve()
+        resulting_applet_path: Path = self.__LIB_DIR.joinpath(
+            "example_applet.app"
+        ).resolve()
 
         # Compile the AppleScript source into an applet.
-        osacompile_proc = DarwinSTDLib.compile_applescript(applet_source_path, resulting_applet_path)
+        osacompile_proc = DarwinSTDLib.compile_applescript(
+            applet_source_path, resulting_applet_path
+        )
         if osacompile_proc.return_code != 0:
             assert False, "Failed to compile AppleScript applet!"
 
         # Load the AppleScript we're going to run and execute the technique
-        loaded_applescript: str = DarwinSTDLib.get_osa_script_from_applet(resulting_applet_path)
+        loaded_applescript: str = DarwinSTDLib.get_osa_script_from_applet(
+            resulting_applet_path
+        )
         cmdl = ["/usr/bin/open", str(resulting_applet_path)]
-        execution_result: dict = self.default_executer(argv=cmdl, stdin="", applescript=loaded_applescript)
+        execution_result: dict = self.default_executer(
+            argv=cmdl, stdin="", applescript=loaded_applescript
+        )
 
         # Pretty print the results
         rich.print_json(json.dumps(execution_result, indent=4, sort_keys=True))
@@ -253,28 +293,44 @@ class TestAppleScript:
 
         Arguments: `--osascript-path`
         """
-        stay_open_source_path: Path = self.__LIB_DIR.joinpath(
-            "whoami.scpt") if osascript_path is None else osascript_path
+        stay_open_source_path: Path = (
+            self.__LIB_DIR.joinpath("whoami.scpt")
+            if osascript_path is None
+            else osascript_path
+        )
         if not os.path.isfile(stay_open_source_path):
             assert False, "Script does not exist!"
-        resulting_stay_open_path: Path = self.__LIB_DIR.joinpath("example_stay_open.app").resolve()
+        resulting_stay_open_path: Path = self.__LIB_DIR.joinpath(
+            "example_stay_open.app"
+        ).resolve()
 
         # Compile the AppleScript source into an applet
-        osacompile_proc = DarwinSTDLib.compile_applescript(stay_open_source_path, resulting_stay_open_path)
+        osacompile_proc = DarwinSTDLib.compile_applescript(
+            stay_open_source_path, resulting_stay_open_path
+        )
         if osacompile_proc.return_code != 0:
             assert False, "Error compiling the AppleScript stay-open-script!"
 
         # Insert the Stay-Open-Script plist key: `OSAAppletStayOpen`
         plist_path: Path = resulting_stay_open_path.joinpath("Contents", "Info.plist")
-        plist_result = DarwinSTDLib.insert_plist_key(plist_path=plist_path, key="OSAAppletStayOpen", value_type="-bool",
-                                                     value="YES")
+        plist_result = DarwinSTDLib.insert_plist_key(
+            plist_path=plist_path,
+            key="OSAAppletStayOpen",
+            value_type="-bool",
+            value="YES",
+        )
         if not plist_result:
-            assert False, "Error inserting the stay-open-key into the AppleScript applet!"
+            assert (
+                False
+            ), "Error inserting the stay-open-key into the AppleScript applet!"
 
-        loaded_applescript: str = DarwinSTDLib.get_osa_script_from_applet(resulting_stay_open_path)
+        loaded_applescript: str = DarwinSTDLib.get_osa_script_from_applet(
+            resulting_stay_open_path
+        )
         cmdl = ["/usr/bin/open", str(resulting_stay_open_path)]
-        execution_result: dict = self.default_executer(argv=cmdl, stdin="",
-                                                       applescript=loaded_applescript)
+        execution_result: dict = self.default_executer(
+            argv=cmdl, stdin="", applescript=loaded_applescript
+        )
 
         # Pretty print the results
         rich.print_json(json.dumps(execution_result, indent=4, sort_keys=True))
@@ -302,7 +358,8 @@ class TestAppleScript:
             return {"result": "failure"}
         try:
             # subprocess.run() is blocking which is why we need to use Popen here.
-            proc: subprocess.Popen = subprocess.Popen(argv,
+            proc: subprocess.Popen = subprocess.Popen(
+                argv,
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -331,7 +388,7 @@ class TestAppleScript:
             # 1. The executing binary (e.g. `.app` for Applets, Stay-Open-Scripts, etc.)
             # 2. The executed script (e.g. `.sh` or `.scpt` for shell and OSA files respectively)
             executable_path: Path = argv[0]
-            if argv[0] == Path('/usr/bin/osascript') and argv[1] != "-e":
+            if argv[0] == Path("/usr/bin/osascript") and argv[1] != "-e":
                 executable_path = argv[1]
 
             # The following logic applies to applet and stay-open-script application bundles specific test harness
@@ -342,7 +399,9 @@ class TestAppleScript:
 
                 # Here we're going to get the name of the actual Mach-O binary being executed. These live in the .app's
                 # "MacOS" directory.
-                execution_dir: Path = Path(argv[1]).joinpath("Contents", "MacOS").resolve()
+                execution_dir: Path = (
+                    Path(argv[1]).joinpath("Contents", "MacOS").resolve()
+                )
                 app_plist: dict = DarwinSTDLib.get_app_plist(Path(argv[1]))
                 app_binary: str = ""
                 if "CFBundleExecutable" in app_plist:
@@ -350,49 +409,73 @@ class TestAppleScript:
                 else:
                     app_binary = os.listdir(execution_dir)[0]
 
-                executable_path = Path(argv[1]).joinpath("Contents", "MacOS", app_binary).resolve()
+                executable_path = (
+                    Path(argv[1]).joinpath("Contents", "MacOS", app_binary).resolve()
+                )
 
                 # Using the `psutil` library we can get the correct pid for the executed application.
                 # We will first try to find the application by the Mach-O binary name and then we will try with the
                 # `.app` name.
                 # If we still cannot find the pid of the executed binary then it's dead...
-                app_proc_enumeration: list = list(filter(lambda p: p.name() == app_name, psutil.process_iter()))
-                if len(app_proc_enumeration) > 0 and app_proc_enumeration[0].pid is not None:
+                app_proc_enumeration: list = list(
+                    filter(lambda p: p.name() == app_name, psutil.process_iter())
+                )
+                if (
+                    len(app_proc_enumeration) > 0
+                    and app_proc_enumeration[0].pid is not None
+                ):
                     pid = app_proc_enumeration[0].pid
                 else:
                     app_proc_enumeration: list = list(
-                        filter(lambda p: p.name() == executable_path.stem, psutil.process_iter()))
-                    if len(app_proc_enumeration) > 0 and app_proc_enumeration[0].pid is not None:
+                        filter(
+                            lambda p: p.name() == executable_path.stem,
+                            psutil.process_iter(),
+                        )
+                    )
+                    if (
+                        len(app_proc_enumeration) > 0
+                        and app_proc_enumeration[0].pid is not None
+                    ):
                         pid = app_proc_enumeration[0].pid
 
                 # Next we'll attempt to grab the correct ppid
                 try:
                     ppid = psutil.Process(pid).ppid()
                 except psutil.NoSuchProcess as err:
-                    logging.warning("Could not find parent process of pid: {}\n{}".format(pid, err))
+                    logging.warning(
+                        "Could not find parent process of pid: {}\n{}".format(pid, err)
+                    )
                     ppid = -1
 
                 # This is mostly for Stay-Open-Scripts, but we're going to want to kill the process once we've
                 # collected all the necessary telemetry. For this we're going to use the 'kill' command.
                 if len(app_proc_enumeration) > 0:
                     time.sleep(1)
-                    kill_status: subprocess.CompletedProcess = subprocess.run(["kill", f"{pid}"], capture_output=True)
+                    kill_status: subprocess.CompletedProcess = subprocess.run(
+                        ["kill", f"{pid}"], capture_output=True
+                    )
                     if kill_status.returncode == 1:
                         # Killing the process will most likely happen for Applets
                         logging.debug(
-                            "Failed to kill process:\nProc Name: {}\nPID: {}".format(executable_path.stem,
-                                                                                     pid))
+                            "Failed to kill process:\nProc Name: {}\nPID: {}".format(
+                                executable_path.stem, pid
+                            )
+                        )
 
             returncode: int = proc.returncode
             process_error: bool = False
             if len(process_stdout_result) != 0 and not (
-                    "returned:OK" in process_stdout_result or "gave up:true" in process_stdout_result):
+                "returned:OK" in process_stdout_result
+                or "gave up:true" in process_stdout_result
+            ):
                 process_error = True
             if Path.home().name in process_stdout_result:
                 process_error = False
 
             # Fill out the completed process model
-            completed_process = StandardizedCompletedProcess(result="success", argv=str(proc.args))
+            completed_process = StandardizedCompletedProcess(
+                result="success", argv=str(proc.args)
+            )
             completed_process.attack_id = "T1059.002"
             completed_process.process_path = str(proc.args[0])
             completed_process.return_code = returncode
@@ -402,11 +485,17 @@ class TestAppleScript:
             completed_process.stdout = process_stdout_result
             completed_process.executable_name = Path(executable_path).name
             completed_process.md5 = DarwinSTDLib.get_md5(executable_path)
-            completed_process.executed_applescript = applescript if len(applescript) > 0 else ""
+            completed_process.executed_applescript = (
+                applescript if len(applescript) > 0 else ""
+            )
 
             if returncode != 0 or process_error:
                 completed_process.result = "failure"
             return completed_process.__dict__
 
-        except (subprocess.CalledProcessError, FileNotFoundError, PermissionError) as err:
+        except (
+            subprocess.CalledProcessError,
+            FileNotFoundError,
+            PermissionError,
+        ) as err:
             return {"result": f"Failure: {err}"}

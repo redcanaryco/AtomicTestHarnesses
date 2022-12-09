@@ -16,13 +16,16 @@ MODULE_NAME = "posixath"
 
 
 def get_args() -> tuple[argparse.Namespace, list[str]]:
-    description = textwrap.dedent("""
+    description = textwrap.dedent(
+        """
     PosixATH is the POSIX version of AtomicTestHarness that provides support for
     macOS and Linux operating systems. AtomicTestHarnesses streamlines the
     execution of ATT&CK technique variations and validates that the expected
     telemetry surfaces in the process.
-    """)
-    epilog=textwrap.dedent("""
+    """
+    )
+    epilog = textwrap.dedent(
+        """
     Examples:
 
     Run all of the variations of ATT&CK technique T1018 for Linux
@@ -30,12 +33,13 @@ def get_args() -> tuple[argparse.Namespace, list[str]]:
 
     Run all of the variations of ATT&CK technique T1059.002 for macOS
         python -m posixath macos -t T1059_002
-    """)
+    """
+    )
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description=description,
         prog="PosixATH",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=epilog
+        epilog=epilog,
     )
     parser.add_argument(
         "-v",
