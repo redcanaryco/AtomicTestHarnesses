@@ -26,7 +26,7 @@ class StandardizedCompletedProcess:
 
     def __init__(self, result: str, argv: str, process_path: str | None = ""):
         self.activity_at_ts: str = (
-                datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+            datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
         )
 
         self.attack_id: str = ""
@@ -156,7 +156,7 @@ class STDLib:
 
     @staticmethod
     def default_commandline_executer(
-            argv: list[str], stdin: str | None = None
+        argv: list[str], stdin: str | None = None
     ) -> StandardizedCompletedProcess | None:
         """
         Execute a basic command-line and provides back telemetry in the form of a StandardizedCompletedProcess.
@@ -224,9 +224,9 @@ class STDLib:
 
             return completed_proc_model
         except (
-                subprocess.CalledProcessError,
-                FileNotFoundError,
-                PermissionError,
+            subprocess.CalledProcessError,
+            FileNotFoundError,
+            PermissionError,
         ) as err:
             logger.error(err)
 
@@ -240,10 +240,15 @@ class DarwinSTDLib(STDLib):
         """
         Attempts to get the "file type" of the specified file. To do this we use the `/usr/bin/file` LOLbin.
         """
-        file_result = DarwinSTDLib.default_commandline_executer(["/usr/bin/file", str(file_path)])
+        file_result = DarwinSTDLib.default_commandline_executer(
+            ["/usr/bin/file", str(file_path)]
+        )
         file_type: str = "UNKNOWN"
         if file_result.result == "success":
-            if file_result.stdout is not None and len(file_result.stdout.split(":")) > 0:
+            if (
+                file_result.stdout is not None
+                and len(file_result.stdout.split(":")) > 0
+            ):
                 file_type = file_result.stdout.split(":")[1].strip()
         return file_type
 
@@ -259,34 +264,54 @@ class DarwinSTDLib(STDLib):
         return True
 
     @staticmethod
-    def osacompile(script_path: Path, destination_path: Path, jxa: bool = False) -> StandardizedCompletedProcess:
+    def osacompile(
+        script_path: Path, destination_path: Path, jxa: bool = False
+    ) -> StandardizedCompletedProcess:
         """
         Python wrapper for the `/usr/bin/osascript` LoLBin. Executes either AppleScript or JXA scripts.
         """
         osacompile_bin_path: str = "/usr/bin/osacompile"
         if jxa:
-            cmdl: list[str] = [osacompile_bin_path, "-l", "JavaScript", "-o", str(destination_path), str(script_path)]
+            cmdl: list[str] = [
+                osacompile_bin_path,
+                "-l",
+                "JavaScript",
+                "-o",
+                str(destination_path),
+                str(script_path),
+            ]
         else:
-            cmdl: list[str] = [osacompile_bin_path, "-o", str(destination_path), str(script_path)]
+            cmdl: list[str] = [
+                osacompile_bin_path,
+                "-o",
+                str(destination_path),
+                str(script_path),
+            ]
 
         return DarwinSTDLib.default_commandline_executer(cmdl)
 
     @staticmethod
-    def compile_applescript(script_path: Path, destination_path: Path) -> StandardizedCompletedProcess:
+    def compile_applescript(
+        script_path: Path, destination_path: Path
+    ) -> StandardizedCompletedProcess:
         """
         Wrapper for the osacompile method specifically for AppleScript.
         """
         return DarwinSTDLib.osacompile(script_path, destination_path)
 
     @staticmethod
-    def compile_jxa(script_path: Path, destination_path: Path) -> StandardizedCompletedProcess:
+    def compile_jxa(
+        script_path: Path, destination_path: Path
+    ) -> StandardizedCompletedProcess:
         """
         Wrapper for the osacompile method specifically for JXA.
         """
         return DarwinSTDLib.osacompile(script_path, destination_path, jxa=True)
 
     @staticmethod
-    def osadecompile(script_path: Path, destination_path: Path | None = None) -> StandardizedCompletedProcess:
+    def osadecompile(
+        script_path: Path, destination_path: Path | None = None
+    ) -> StandardizedCompletedProcess:
         """
         Decompiles a specified OSA script byte-code file and returns the source in the stdout of the returned
         StandardizedCompletedProcess.
@@ -295,7 +320,12 @@ class DarwinSTDLib(STDLib):
 
         cmdl: list = []
         if destination_path is not None:
-            cmdl = [osadecompile_bin_path, "-o", str(destination_path), str(script_path)]
+            cmdl = [
+                osadecompile_bin_path,
+                "-o",
+                str(destination_path),
+                str(script_path),
+            ]
         else:
             cmdl = [osadecompile_bin_path, str(script_path)]
 
@@ -309,17 +339,22 @@ class DarwinSTDLib(STDLib):
         """
         # Check to ensure Xcode command line tools are installed
         xcode_select_bin_path: str = "/usr/bin/xcode-select"
-        xcode_select_proc = DarwinSTDLib.default_commandline_executer([xcode_select_bin_path, "-p"])
+        xcode_select_proc = DarwinSTDLib.default_commandline_executer(
+            [xcode_select_bin_path, "-p"]
+        )
         if "error: unable" in xcode_select_proc.stdout:
             # We need to install Xcode command line tools
-            cmdl_install_proc = DarwinSTDLib.default_commandline_executer([xcode_select_bin_path, "--install"])
+            cmdl_install_proc = DarwinSTDLib.default_commandline_executer(
+                [xcode_select_bin_path, "--install"]
+            )
             install_rc: int = cmdl_install_proc.returncode
             install_stderr: str = cmdl_install_proc.stderr
             install_stdout: str = cmdl_install_proc.stdout
 
             if install_rc != 0 or len(install_stderr) > 0:
                 print(
-                    f"Unable to install Xcode command line tools!\nReturn code: {install_rc}\nSTDOUT: {install_stdout}\nSTDERR: {install_stderr}")
+                    f"Unable to install Xcode command line tools!\nReturn code: {install_rc}\nSTDOUT: {install_stdout}\nSTDERR: {install_stderr}"
+                )
                 return False
             else:
                 print("Xcode command line tools are now installed.")
@@ -329,7 +364,9 @@ class DarwinSTDLib(STDLib):
             return True
 
     @staticmethod
-    def compile_swift(source_path: Path, destination_path: Path) -> StandardizedCompletedProcess:
+    def compile_swift(
+        source_path: Path, destination_path: Path
+    ) -> StandardizedCompletedProcess:
         """
         Compiles a Swift source file at the provided path and outputs the Mach-O to the specified destination
         path. As a requirement, we first need to check if the Xcode command line tools are installed.
@@ -345,8 +382,9 @@ class DarwinSTDLib(STDLib):
         stdout: str = swift_compile_proc.stdout.decode("utf-8")
         stderr: str = swift_compile_proc.stderr.decode("utf-8")
         result: str = "success" if returncode == 0 else "failure"
-        response_model: StandardizedCompletedProcess = StandardizedCompletedProcess(result=result, argv=str(cmdl),
-                                                                                    process_path=swiftc_bin_path)
+        response_model: StandardizedCompletedProcess = StandardizedCompletedProcess(
+            result=result, argv=str(cmdl), process_path=swiftc_bin_path
+        )
         response_model.stdout = stdout
         response_model.stderr = stderr
         response_model.return_code = returncode
@@ -354,7 +392,9 @@ class DarwinSTDLib(STDLib):
         return response_model
 
     @staticmethod
-    def insert_plist_key(plist_path: Path, key: str, value_type: str, value: any) -> bool:
+    def insert_plist_key(
+        plist_path: Path, key: str, value_type: str, value: any
+    ) -> bool:
         """
         Inserts a key / value pair into the specified property list file. Returning a boolean value indicating
         success / failure.
@@ -363,8 +403,14 @@ class DarwinSTDLib(STDLib):
         insert_plist_key("/Applications/Mail.app/Contents/Info.plist", "OSAAppletStayOpen", "-bool", "YES")
         """
         plutil_bin_path: str = "/usr/bin/plutil"
-        cmdl: list = [plutil_bin_path, "-insert", key, value_type, value,
-                      str(plist_path)]
+        cmdl: list = [
+            plutil_bin_path,
+            "-insert",
+            key,
+            value_type,
+            value,
+            str(plist_path),
+        ]
         insert_proc = DarwinSTDLib.default_commandline_executer(cmdl)
         if "already exists" not in insert_proc.stdout and insert_proc.return_code != 0:
             return False
@@ -379,7 +425,11 @@ class DarwinSTDLib(STDLib):
         """
         if os.path.isfile(wflow_path):
             try:
-                elements: list = ET.parse(wflow_path).getroot().findall('dict/array/dict/dict/dict/string')
+                elements: list = (
+                    ET.parse(wflow_path)
+                    .getroot()
+                    .findall("dict/array/dict/dict/dict/string")
+                )
                 for element in elements:
                     if element.text != "List":
                         return element.text
@@ -395,7 +445,9 @@ class DarwinSTDLib(STDLib):
         2. The script source will be located in `../Contents/Resources/Scripts/main.scpt` as a compiled OSA script
         3. Run-only script files --> not supported.
         """
-        script_path: Path = applet_path.joinpath("Contents", "Resources", "Scripts", "main.scpt").resolve()
+        script_path: Path = applet_path.joinpath(
+            "Contents", "Resources", "Scripts", "main.scpt"
+        ).resolve()
         wflow_path: Path = applet_path.joinpath("Contents", "document.wflow").resolve()
         if os.path.isfile(wflow_path):
             # Automator case
