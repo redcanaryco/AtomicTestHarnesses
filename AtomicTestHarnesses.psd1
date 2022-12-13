@@ -4,7 +4,7 @@
 RootModule = 'Windows\AtomicTestHarnesses.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.11.0.0'
+ModuleVersion = '1.12.0.0'
 
 # ID used to uniquely identify this module
 GUID = '195a1637-d4a4-4cb3-8d80-5b5d4e3e930a'
@@ -45,6 +45,7 @@ FunctionsToExport = 'Get-ATHDriverService',
                     'New-ATHMSI',
                     'Out-ATHPowerShellCommandLineParameter',
                     'Remove-ATHService',
+                    'Set-ATHRegistry',
                     'Start-ATHProcessHerpaderp',
                     'Start-ATHProcessUnderSpecificParent'
                     
@@ -65,6 +66,13 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+1.12.0
+------
+Added:
+* Set-ATHRegistry
+
+Improvements:
+* Documented the -DeleteServiceBinary switch in New-ATHService
 
 1.11.0
 ------

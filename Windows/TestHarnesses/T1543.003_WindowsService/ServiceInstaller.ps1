@@ -606,6 +606,10 @@ Specifies the name of the service to be created.
 
 Specifies the description of the service to be created.
 
+.PARAMETER Variant
+
+Chooses how the service creation will be performed. This can be one of the following - Win32 APIs, WMI, sc.exe, or Registry. Default is sc.exe.
+
 .PARAMETER StartType
 
 Specifies how the service should start. Supported options are: BootStart, SystemStart, AutoStart, DemandStart, Disabled. If -StartType is not specified, DemandStart is used as the default option.
@@ -618,13 +622,13 @@ Specifies the type of service to install: KernelDriver, FileSystemDriver, Win32O
 
 Specifies the path to the service binary.
 
+.PARAMETER DeleteServiceBinary
+
+Specifies that the service executable should be deleted after creating the service. Note: this will cause service execution to fail. This switch is implemented for optional clean up purposes.
+
 .PARAMETER StartService
 
 Indicates that the service is to be started immediately after installation.
-
-.PARAMETER Variant
-
-Chooses how the service creation will be performed. This can be one of the following - Win32 APIs, WMI, sc.exe, or Registry. Default is sc.exe.
 
 .OUTPUTS
 
