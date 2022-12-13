@@ -1,0 +1,17 @@
+name: Publish PowerShell Module
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish-to-gallery:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build and publish
+        run: |
+          Publish-Module -Path '.' -NuGetApiKey "$Env:PGALLERY"
+        shell: pwsh
+        env:
+          PGALLERY: ${{ secrets.PGALLERY }}

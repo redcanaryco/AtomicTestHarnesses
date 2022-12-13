@@ -35,7 +35,9 @@ def osa_shell_path(pytestconfig: pytest.Config):
 # Several variations are supported: OSAKit, osascript CMDL, shell scripts, applets, and stay-open-scripts.
 @pytest.mark.macos
 class TestJXA:
-    __LIB_DIR = Path(abspath(getsourcefile(lambda: 0))).parent.joinpath("library", "T1059_007")
+    __LIB_DIR = Path(abspath(getsourcefile(lambda: 0))).parent.joinpath(
+        "library", "T1059_007"
+    )
     __CHMOD_744: int = 0o744
 
     def test_osakit(self, osascript_path: Path):
@@ -57,8 +59,14 @@ class TestJXA:
         - You can infer OSA code execution by watching for ES_EVENT_TYPE_NOTIFY_MMAP events. Processes which map
           scripting additions / JavaScript / AppleScript components into memory are likely utilizing this API.
         """
-        osakit_source_code_path: Path = self.__LIB_DIR.joinpath("osakit_example.swift").resolve()
-        script_path = self.__LIB_DIR.joinpath("whoami_jxa.scpt").resolve() if osascript_path is None else osascript_path
+        osakit_source_code_path: Path = self.__LIB_DIR.joinpath(
+            "osakit_example.swift"
+        ).resolve()
+        script_path = (
+            self.__LIB_DIR.joinpath("whoami_jxa.scpt").resolve()
+            if osascript_path is None
+            else osascript_path
+        )
         if not os.path.isfile(osakit_source_code_path):
             assert False, "Swift source code file does not exist!"
         if not os.path.isfile(script_path):
@@ -66,18 +74,23 @@ class TestJXA:
 
         # Load the JXA we're going to execute and execute the technique
         try:
-            with open(script_path, 'r') as script_dir_fd:
+            with open(script_path, "r") as script_dir_fd:
                 jxa_source: str = " ".join(script_dir_fd.readlines())
 
             # Basic check to make sure we have a Swift source file
             if osakit_source_code_path.suffix != ".swift":
                 logging.error("File is not Swift source code.")
-                assert False, f"This is not a valid Swift file: {osakit_source_code_path.name}"
+                assert (
+                    False
+                ), f"This is not a valid Swift file: {osakit_source_code_path.name}"
 
             # Compile the Swift source file.
-            destination_path: str = str(self.__LIB_DIR.joinpath("osakit_example").resolve())
-            swift_compile_result: StandardizedCompletedProcess = DarwinSTDLib.compile_swift(osakit_source_code_path,
-                                                                                            destination_path)
+            destination_path: str = str(
+                self.__LIB_DIR.joinpath("osakit_example").resolve()
+            )
+            swift_compile_result: StandardizedCompletedProcess = (
+                DarwinSTDLib.compile_swift(osakit_source_code_path, destination_path)
+            )
             # Check to make sure compilation was successful
             returncode: int = swift_compile_result.return_code
             stderr: str = swift_compile_result.stderr
@@ -89,20 +102,23 @@ class TestJXA:
             executable: bool = os.access(destination_path, self.__CHMOD_744)
             if not executable:
                 # Set the executable bit for the user
-                make_executable_result: bool = DarwinSTDLib.make_file_executable(destination_path)
+                make_executable_result: bool = DarwinSTDLib.make_file_executable(
+                    destination_path
+                )
                 if not make_executable_result:
                     assert False, "Failed to make the NSAppleScript example executable!"
 
-            execution_result: dict = self.default_executer([destination_path], str(script_path),
-                                                           jxa=jxa_source)
-
-            # Pretty print the results
-            rich.print_json(
-                json.dumps(execution_result, indent=4, sort_keys=True)
+            execution_result: dict = self.default_executer(
+                [destination_path], str(script_path), jxa=jxa_source
             )
 
+            # Pretty print the results
+            rich.print_json(json.dumps(execution_result, indent=4, sort_keys=True))
+
             # Was it a success?
-            assert execution_result is not None and execution_result["result"] == "success"
+            assert (
+                execution_result is not None and execution_result["result"] == "success"
+            )
         except FileNotFoundError as fnfe:
             assert False, f"File not found:\n{fnfe}"
 
@@ -122,43 +138,59 @@ class TestJXA:
         - Execution of the `osascript` binary will take place and any command line arguments will also be visible.
         - This is the most trivial case to detect.
         """
-        script_path = self.__LIB_DIR.joinpath("whoami_jxa.scpt").resolve() if osascript_path is None else osascript_path
+        script_path = (
+            self.__LIB_DIR.joinpath("whoami_jxa.scpt").resolve()
+            if osascript_path is None
+            else osascript_path
+        )
         osascript_bin_path = Path("/usr/bin/osascript")
         if not os.path.isfile(script_path):
             assert False, "Script does not exist!"
 
-        whoami_cmdl = [osascript_bin_path, "-l", "JavaScript", "-e", "var app = Application.currentApplication();",
-                       "-e",
-                       "app.includeStandardAdditions = true;", "-e", "app.systemInfo().shortUserName;"]
+        whoami_cmdl = [
+            osascript_bin_path,
+            "-l",
+            "JavaScript",
+            "-e",
+            "var app = Application.currentApplication();",
+            "-e",
+            "app.includeStandardAdditions = true;",
+            "-e",
+            "app.systemInfo().shortUserName;",
+        ]
 
         try:
             # Try to load the JXA from the script file
-            with open(script_path, 'r') as script_dir_fd:
+            with open(script_path, "r") as script_dir_fd:
                 jxa_source: str = " ".join(script_dir_fd.readlines())
 
             # Execute the script load variation
-            execution_result: dict = self.default_executer([osascript_bin_path, "-l", "JavaScript", str(script_path)],
-                                                           "",
-                                                           jxa=jxa_source)
+            execution_result: dict = self.default_executer(
+                [osascript_bin_path, "-l", "JavaScript", str(script_path)],
+                "",
+                jxa=jxa_source,
+            )
 
             # Pretty print the results
-            rich.print_json(
-                json.dumps(execution_result, indent=4, sort_keys=True)
-            )
+            rich.print_json(json.dumps(execution_result, indent=4, sort_keys=True))
 
             # Was it a success?
-            assert execution_result is not None and execution_result["result"] == "success"
+            assert (
+                execution_result is not None and execution_result["result"] == "success"
+            )
 
             # Execute the line-by-line variation
-            cmdl_args_result: dict = self.default_executer(whoami_cmdl, "", jxa=jxa_source)
-
-            # Pretty print the results from the command line arguments
-            rich.print_json(
-                json.dumps(cmdl_args_result, indent=4, sort_keys=True)
+            cmdl_args_result: dict = self.default_executer(
+                whoami_cmdl, "", jxa=jxa_source
             )
 
+            # Pretty print the results from the command line arguments
+            rich.print_json(json.dumps(cmdl_args_result, indent=4, sort_keys=True))
+
             # Was it a success?
-            assert cmdl_args_result is not None and cmdl_args_result["result"] == "success"
+            assert (
+                cmdl_args_result is not None and cmdl_args_result["result"] == "success"
+            )
         except FileNotFoundError as fnfe:
             assert False, f"File not found:\n{fnfe}"
 
@@ -174,8 +206,11 @@ class TestJXA:
         - Execution of the `osascript` binary will take place and any command line arguments will also be visible.
         - The full script content on products supporting script loads
         """
-        script_path: Path = self.__LIB_DIR.joinpath(
-            "whoami_jxa.sh").resolve() if osa_shell_path is None else osa_shell_path
+        script_path: Path = (
+            self.__LIB_DIR.joinpath("whoami_jxa.sh").resolve()
+            if osa_shell_path is None
+            else osa_shell_path
+        )
         if not os.path.isfile(script_path):
             assert False, "Shell script does not exist!"
 
@@ -194,17 +229,19 @@ class TestJXA:
 
         # Load the JXA we're going to execute and execute the technique
         try:
-            with open(script_path, 'r') as script_fd:
+            with open(script_path, "r") as script_fd:
                 loaded_jxa: str = " ".join(script_fd.readlines()[1:])
-            execution_result: dict = self.default_executer([script_path], "", jxa=loaded_jxa)
-
-            # Pretty print the results
-            rich.print_json(
-                json.dumps(execution_result, indent=4, sort_keys=True)
+            execution_result: dict = self.default_executer(
+                [script_path], "", jxa=loaded_jxa
             )
 
+            # Pretty print the results
+            rich.print_json(json.dumps(execution_result, indent=4, sort_keys=True))
+
             # Was it a success?
-            assert execution_result is not None and execution_result["result"] == "success"
+            assert (
+                execution_result is not None and execution_result["result"] == "success"
+            )
 
         except FileNotFoundError as fnfe:
             assert False, f"File not found:\n{fnfe}"
@@ -227,14 +264,21 @@ class TestJXA:
         - You can infer OSA code execution by watching for ES_EVENT_TYPE_NOTIFY_MMAP events. Processes which map
           scripting additions / JavaScript / AppleScript components into memory are applets
         """
-        applet_source_path: Path = self.__LIB_DIR.joinpath(
-            "whoami_jxa.scpt").resolve() if osascript_path is None else osascript_path
+        applet_source_path: Path = (
+            self.__LIB_DIR.joinpath("whoami_jxa.scpt").resolve()
+            if osascript_path is None
+            else osascript_path
+        )
         if not os.path.isfile(applet_source_path):
             assert False, "Script does not exist!"
-        resulting_applet_path: Path = self.__LIB_DIR.joinpath("example_jxa_applet.app").resolve()
+        resulting_applet_path: Path = self.__LIB_DIR.joinpath(
+            "example_jxa_applet.app"
+        ).resolve()
 
         # Compile the JXA source into an applet.
-        osacompile_proc = DarwinSTDLib.compile_jxa(applet_source_path, resulting_applet_path)
+        osacompile_proc = DarwinSTDLib.compile_jxa(
+            applet_source_path, resulting_applet_path
+        )
         if osacompile_proc.return_code != 0:
             assert False, "Error compiling the JXA applet!"
 
@@ -258,31 +302,42 @@ class TestJXA:
 
         Arguments: `--osascript-path`
         """
-        jxa_source_path: Path = self.__LIB_DIR.joinpath("whoami_jxa.scpt") if osascript_path is None else osascript_path
+        jxa_source_path: Path = (
+            self.__LIB_DIR.joinpath("whoami_jxa.scpt")
+            if osascript_path is None
+            else osascript_path
+        )
         if not os.path.isfile(jxa_source_path):
             assert False, "Script does not exist!"
-        dest_applet_path: Path = self.__LIB_DIR.joinpath("example_stay_open_jxa.app").resolve()
+        dest_applet_path: Path = self.__LIB_DIR.joinpath(
+            "example_stay_open_jxa.app"
+        ).resolve()
 
         # Compile the JXA source into an applet
-        applet_proc: StandardizedCompletedProcess = DarwinSTDLib.compile_jxa(jxa_source_path, dest_applet_path)
+        applet_proc: StandardizedCompletedProcess = DarwinSTDLib.compile_jxa(
+            jxa_source_path, dest_applet_path
+        )
         if applet_proc.return_code != 0 or len(applet_proc.stderr) > 0:
             assert False, "The stay-open-script did not properly execute."
         plist_path: Path = dest_applet_path.joinpath("Contents", "Info.plist").resolve()
 
-        plist_result: bool = DarwinSTDLib.insert_plist_key(plist_path, key="OSAAppletStayOpen", value_type="-bool",
-                                                           value="YES")
+        plist_result: bool = DarwinSTDLib.insert_plist_key(
+            plist_path, key="OSAAppletStayOpen", value_type="-bool", value="YES"
+        )
         if not plist_result:
             # If there was a problem inserting the stay open plist key
-            assert False, f"Error adding Property List key: OSAAppletStayOpen to: {plist_path}"
+            assert (
+                False
+            ), f"Error adding Property List key: OSAAppletStayOpen to: {plist_path}"
 
         # Load the JXA we're going to execute and execute the technique
         loaded_jxa: str = DarwinSTDLib.get_osa_script_from_applet(dest_applet_path)
         cmdl = ["/usr/bin/open", str(dest_applet_path)]
-        execution_result: StandardizedCompletedProcess = self.default_executer(argv=cmdl, stdin="", jxa=loaded_jxa)
-        # Pretty print the results
-        rich.print_json(
-            json.dumps(execution_result, indent=4, sort_keys=True)
+        execution_result: StandardizedCompletedProcess = self.default_executer(
+            argv=cmdl, stdin="", jxa=loaded_jxa
         )
+        # Pretty print the results
+        rich.print_json(json.dumps(execution_result, indent=4, sort_keys=True))
 
         # Was it a success?
         assert execution_result is not None and execution_result["result"] == "success"
@@ -341,7 +396,7 @@ class TestJXA:
             # 1. The executing binary (e.g. `.app` for Applets, Stay-Open-Scripts, etc.)
             # 2. The executed script (e.g. `.sh` or `.scpt` for shell and OSA files respectively)
             executable_path: Path = argv[0]
-            if argv[0] == Path('/usr/bin/osascript') and "-e" not in argv:
+            if argv[0] == Path("/usr/bin/osascript") and "-e" not in argv:
                 if "-l" in argv:
                     executable_path = argv[3]
 
@@ -353,7 +408,9 @@ class TestJXA:
 
                 # Here we're going to get the name of the actual Mach-O binary being executed. These live in the .app's
                 # "MacOS" directory.
-                execution_dir: Path = Path(argv[1]).joinpath("Contents", "MacOS").resolve()
+                execution_dir: Path = (
+                    Path(argv[1]).joinpath("Contents", "MacOS").resolve()
+                )
                 app_plist: dict = DarwinSTDLib.get_app_plist(Path(argv[1]))
                 app_binary: str = ""
                 if "CFBundleExecutable" in app_plist:
@@ -361,46 +418,74 @@ class TestJXA:
                 else:
                     app_binary = os.listdir(execution_dir)[0]
 
-                executable_path = Path(argv[1]).joinpath("Contents", "MacOS", app_binary).resolve()
+                executable_path = (
+                    Path(argv[1]).joinpath("Contents", "MacOS", app_binary).resolve()
+                )
 
                 # Using the `psutil` library we can get the correct pid for the executed application.
                 # We will first try to find the application by the Mach-O binary name and then we will try with the
                 # `.app` name.
                 # If we still cannot find the pid of the executed binary then it's dead...
-                app_proc_enumeration: list = list(filter(lambda p: p.name() == app_name, psutil.process_iter()))
-                if len(app_proc_enumeration) > 0 and app_proc_enumeration[0].pid is not None:
+                app_proc_enumeration: list = list(
+                    filter(lambda p: p.name() == app_name, psutil.process_iter())
+                )
+                if (
+                    len(app_proc_enumeration) > 0
+                    and app_proc_enumeration[0].pid is not None
+                ):
                     pid = app_proc_enumeration[0].pid
                 else:
                     app_proc_enumeration: list = list(
-                        filter(lambda p: p.name() == executable_path.stem, psutil.process_iter()))
-                    if len(app_proc_enumeration) > 0 and app_proc_enumeration[0].pid is not None:
+                        filter(
+                            lambda p: p.name() == executable_path.stem,
+                            psutil.process_iter(),
+                        )
+                    )
+                    if (
+                        len(app_proc_enumeration) > 0
+                        and app_proc_enumeration[0].pid is not None
+                    ):
                         pid = app_proc_enumeration[0].pid
                 try:
                     ppid = psutil.Process(pid).ppid()
                 except psutil.NoSuchProcess as err:
-                    logging.warning("Could not find parent process of pid: {}\n{}".format(pid, err))
+                    logging.warning(
+                        "Could not find parent process of pid: {}\n{}".format(pid, err)
+                    )
                     ppid = -1
 
                 if len(app_proc_enumeration) > 0:
                     # This is mostly for Stay-Open-Scripts, but we're going to want to kill the process once we've
                     # collected all the necessary telemetry. For this we're going to use the 'kill' command.
                     time.sleep(1)
-                    kill_status: subprocess.CompletedProcess = subprocess.run(["kill", f"{pid}"], capture_output=True)
+                    kill_status: subprocess.CompletedProcess = subprocess.run(
+                        ["kill", f"{pid}"], capture_output=True
+                    )
                     if kill_status.returncode == 1:
                         # Killing the process will most likely happen for Applets
                         logging.debug(
-                            "Failed to kill process:\nProc Name: {}\nPID: {}".format(executable_path.stem, pid))
+                            "Failed to kill process:\nProc Name: {}\nPID: {}".format(
+                                executable_path.stem, pid
+                            )
+                        )
 
             returncode: int = proc.returncode
             process_error: bool = False
             if len(process_stdout_result) != 0 and not (
-                    "returned:OK" in process_stdout_result or "gaveUp:true" in process_stdout_result):
+                "returned:OK" in process_stdout_result
+                or "gaveUp:true" in process_stdout_result
+            ):
                 process_error = True
-            if Path.home().name in process_stdout_result or "NSAppleEvent" in process_stdout_result:
+            if (
+                Path.home().name in process_stdout_result
+                or "NSAppleEvent" in process_stdout_result
+            ):
                 process_error = False
 
             # Fill out the completed process model
-            completed_process = StandardizedCompletedProcess(result="success", argv=str(proc.args))
+            completed_process = StandardizedCompletedProcess(
+                result="success", argv=str(proc.args)
+            )
             completed_process.attack_id = "T1059.007"
             completed_process.process_path = str(proc.args[0])
             completed_process.return_code = returncode
@@ -415,5 +500,9 @@ class TestJXA:
             if returncode != 0 or process_error:
                 completed_process.result = "failure"
             return completed_process.__dict__
-        except (subprocess.CalledProcessError, FileNotFoundError, PermissionError) as err:
+        except (
+            subprocess.CalledProcessError,
+            FileNotFoundError,
+            PermissionError,
+        ) as err:
             assert False, f"Failure: {err}"
