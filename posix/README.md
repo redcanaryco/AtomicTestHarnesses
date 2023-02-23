@@ -36,6 +36,21 @@ python -m posixath macos -t T1059
 # Documentation
 We use a variation on `mkdocs` for our documentation. All of the documentation is housed in the docs folder of the repo. They are markdown files and so can be easily viewed in github or in any standard markdown viewer. You can also use the python library `mkdocs-material` to generate a more friendly local web view of the documentation. To do so make sure you have the dev dependencies listed in the Pipfile installed. Then run `mkdocs serve` from the root directly. This will create a web server that listens on localhost and provides a nice web UI for viewing the documenation.
 
+# Dependencies
+## Linux
+Some test require that the user be `root` in order to run. 
+
+Below is a list of packages required for being able to run the posix tests
+### Ubuntu
+```bash
+$ sudo apt-get install libcap-dev
+```
+
+### Fedora
+```bash
+$ sudo dnf install libcap-devel
+```
+
 # Advanced Usage
 You can use the Posix Atomic Test Harnesses directly from the code base as well. The following instructions will walk you through
 how to setup your environment so that you can run the tests directly from the source. Running tests this way allows you to use any
