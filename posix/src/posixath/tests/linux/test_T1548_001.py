@@ -105,7 +105,6 @@ def make_bins():
 
     yield
 
-    # Should we clean the directory each test run? These binaries are very small and compile quickly
     run(
         ["make", "-C", package_path + "/tests/linux/library/T1548_001/", "clean"],
         check=True,
