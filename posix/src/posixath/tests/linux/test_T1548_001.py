@@ -17,8 +17,6 @@ from pathlib import Path
 from _pytest.fixtures import SubRequest
 from ...utils.common import LinuxSTDLib as stdlib, StandardizedCompletedProcess
 
-# Do a fork of a proces that calls setuid
-# What happens when you fork. Does child process remain as the same user?
 
 # Check if we are being run by our test runner or by pytest directly
 if "PYTEST_CURRENT_TEST" in os.environ:
