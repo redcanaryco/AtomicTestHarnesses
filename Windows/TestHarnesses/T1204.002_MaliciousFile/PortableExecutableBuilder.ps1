@@ -451,14 +451,22 @@ Outputs an object consisting of relevant executable details. The following objec
 
     if ($BuildResFile) {
         if ($TemplateFilePath) {
-            [Diagnostics.FileVersionInfo] $VersionInfo = Get-Item -Path $TemplateFilePath -ErrorAction Stop | Select-Object -ExpandProperty VersionInfo
+            $FileInfo = Get-Item -Path $TemplateFilePath -ErrorAction Stop
+
+            # There is a chance for version info inconsistency if the executable has a localized resource MUI directory in the same path as the executable.
+            # If the file has a hardlink, follow that as the target path is unlikely to have a localized MUI directory there.
+            if ($FileInfo.Target) {
+                [Diagnostics.FileVersionInfo] $VersionInfo = Get-Item -Path $FileInfo.Target[0] -ErrorAction Stop | Select-Object -ExpandProperty VersionInfo
+            } else {
+                [Diagnostics.FileVersionInfo] $VersionInfo = Get-Item -Path $TemplateFilePath -ErrorAction Stop | Select-Object -ExpandProperty VersionInfo
+            }
 
             $ResFileArguments = @{
                 FilePath = $ResFilePath
                 FileType = $PEType
             }
 
-            if ($VersionInfo.OriginalFilename)  { $ResFileArguments['OriginalFilename'] = $VersionInfo.OriginalFilename }
+            if ($VersionInfo.OriginalFilename) { $ResFileArguments['OriginalFilename'] = $VersionInfo.OriginalFilename }
             if ($VersionInfo.FileDescription)   { $ResFileArguments['FileDescription'] = $VersionInfo.FileDescription }
             if ($VersionInfo.ProductVersion)    { $ResFileArguments['ProductVersion'] = $VersionInfo.ProductVersion }
             if ($VersionInfo.InternalName)      { $ResFileArguments['InternalName'] = $VersionInfo.InternalName }
