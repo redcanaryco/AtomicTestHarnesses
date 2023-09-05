@@ -4,7 +4,7 @@
 RootModule = 'Windows\AtomicTestHarnesses.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.13.0.0'
+ModuleVersion = '1.13.1.0'
 
 # ID used to uniquely identify this module
 GUID = '195a1637-d4a4-4cb3-8d80-5b5d4e3e930a'
@@ -67,6 +67,11 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = @'
+1.13.1
+------
+Improvements:
+* New-ATHPortableExecutableRunner was tweaked to follow hard links in order to avoid defaulting to localized MUI directories which can lead to version info cloning inconsistencies.
+
 1.13.0
 ------
 Added:
