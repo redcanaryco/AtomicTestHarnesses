@@ -32,10 +32,14 @@ def source_code_path(pytestconfig: pytest.Config):
 @pytest.mark.macos
 class TestReflectiveLoading:
     # Path to the library directory containing supporting resources for this AtomicTestHarness execution.
-    __LIB_DIR = Path(abspath(getsourcefile(lambda: 0))).parent.joinpath("library", "T1620")
+    __LIB_DIR = Path(abspath(getsourcefile(lambda: 0))).parent.joinpath(
+        "library", "T1620"
+    )
     __CHMOD_744: int = 0o744
 
-    def test_nscreateobjectfileimagefrommemory(self, bundle_path: Path=None, source_code_path: Path=None) -> None:
+    def test_nscreateobjectfileimagefrommemory(
+        self, bundle_path: Path = None, source_code_path: Path = None
+    ) -> None:
         """
         Tests T1620: Reflective Code loading by using `NSCreateObjectFileImageFromMemory` to reflectively load a bundle. A default implementation is provided, but you may also provide your own C source code or your own bundle to reflectively load.
 
@@ -54,18 +58,31 @@ class TestReflectiveLoading:
             libHello_path = bundle_path
         else:
             options: list = ["-bundle"]
-            c_compile_result: StandardizedCompletedProcess = DarwinSTDLib.gcc_compile_with_options(default_dylib_code, libHello_path, options)
+            c_compile_result: StandardizedCompletedProcess = (
+                DarwinSTDLib.gcc_compile_with_options(
+                    default_dylib_code, libHello_path, options
+                )
+            )
             # Check to make sure compilation was successful
             returncode: int = c_compile_result.return_code
             stderr: str = c_compile_result.stderr
             stdout: str = c_compile_result.stdout
             if returncode != 0:
                 assert False, f"Error compiling C source file: {stdout}\n{stderr}"
-        
+
         # Now we have our dylib. Let's compile our `nscreateobjectfileimagefrommemory.c` code.
-        nscreateobjectfileimagefrommemory_reflector_code: Path = self.__LIB_DIR.joinpath("nscreateobjectfileimagefrommemory.c").resolve()
-        nscreateobjectfileimagefrommemory_path: Path = self.__LIB_DIR.joinpath("nscreateobjectfileimagefrommemory").resolve()
-        c_compile_result: StandardizedCompletedProcess = DarwinSTDLib.gcc_compile_with_options(nscreateobjectfileimagefrommemory_reflector_code, nscreateobjectfileimagefrommemory_path)
+        nscreateobjectfileimagefrommemory_reflector_code: Path = (
+            self.__LIB_DIR.joinpath("nscreateobjectfileimagefrommemory.c").resolve()
+        )
+        nscreateobjectfileimagefrommemory_path: Path = self.__LIB_DIR.joinpath(
+            "nscreateobjectfileimagefrommemory"
+        ).resolve()
+        c_compile_result: StandardizedCompletedProcess = (
+            DarwinSTDLib.gcc_compile_with_options(
+                nscreateobjectfileimagefrommemory_reflector_code,
+                nscreateobjectfileimagefrommemory_path,
+            )
+        )
         # Check to make sure compilation was successful
         returncode: int = c_compile_result.return_code
         stderr: str = c_compile_result.stderr
@@ -73,41 +90,57 @@ class TestReflectiveLoading:
         if returncode != 0:
             assert False, f"Error compiling C source file: {stdout}\n{stderr}"
         # Check to ensure that this binary is executable...
-        executable: bool = os.access(nscreateobjectfileimagefrommemory_path, self.__CHMOD_744)
+        executable: bool = os.access(
+            nscreateobjectfileimagefrommemory_path, self.__CHMOD_744
+        )
         if not executable:
             # Set the executable bit for the user
-            if not DarwinSTDLib.make_file_executable(nscreateobjectfileimagefrommemory_path):
-                assert False, "Failed to make the nscreateobjectfileimagefrommemory.c executable!"
+            if not DarwinSTDLib.make_file_executable(
+                nscreateobjectfileimagefrommemory_path
+            ):
+                assert (
+                    False
+                ), "Failed to make the nscreateobjectfileimagefrommemory.c executable!"
 
         # Record how long this takes as we'll use it for lookback context
         start_time = time.time()
-        arguments = [str(nscreateobjectfileimagefrommemory_path.resolve()), str(libHello_path)]
-        execution_result = DarwinSTDLib.default_commandline_executer(arguments) 
+        arguments = [
+            str(nscreateobjectfileimagefrommemory_path.resolve()),
+            str(libHello_path),
+        ]
+        execution_result = DarwinSTDLib.default_commandline_executer(arguments)
         elapsed_time = math.ceil(time.time() - start_time)
         elapsed_time = 2 if elapsed_time < 1 else elapsed_time
 
         # Query the log for the NSLinkModule writeback path
-        options = ['--style', 'compact']
+        options = ["--style", "compact"]
         predicate = "eventMessage CONTAINS 'NSCreateObjectFileImageFromMemory-'"
         logs = DarwinSTDLib.query_aul(options, predicate, look_back_s=elapsed_time)
-        filtered_logs = [log for log in logs if "kernel" in log and "(AppleMobileFileIntegrity) AMFI" in log]
+        filtered_logs = [
+            log
+            for log in logs
+            if "kernel" in log and "(AppleMobileFileIntegrity) AMFI" in log
+        ]
         extracted_path: str = "NOT FOUND"
         if filtered_logs is not None and len(filtered_logs) > 0:
-            path_pattern = re.compile(r"(/private/var/folders/.+?/NSCreateObjectFileImageFromMemory-[^\s']+)")
+            path_pattern = re.compile(
+                r"(/private/var/folders/.+?/NSCreateObjectFileImageFromMemory-[^\s']+)"
+            )
             most_recent_log = filtered_logs[-1]
-            extracted_path = path_pattern.search(most_recent_log).group(1) if path_pattern.search(most_recent_log) else None
-        
-        
+            extracted_path = (
+                path_pattern.search(most_recent_log).group(1)
+                if path_pattern.search(most_recent_log)
+                else None
+            )
+
         # Inject our context and results
         results_json = execution_result.to_json(sort_keys=True, indent=4)
         results_dict: dict = json.loads(results_json)
         results_dict["attack_id"] = "T1620"
         results_dict["nslinkmodule_writeback_path"] = extracted_path
         results_json = json.dumps(results_dict, sort_keys=True, indent=4)
-    
-        rich.print_json(
-           results_json
-        )
-        
+
+        rich.print_json(results_json)
+
         # Was it a success?
         assert results_dict is not None and results_dict["result"] == "success"

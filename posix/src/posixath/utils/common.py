@@ -390,9 +390,11 @@ class DarwinSTDLib(STDLib):
         response_model.return_code = returncode
 
         return response_model
-    
+
     @staticmethod
-    def gcc_compile_with_options(source_code_path: Path, output_file_path: Path, options: list=None) -> StandardizedCompletedProcess:
+    def gcc_compile_with_options(
+        source_code_path: Path, output_file_path: Path, options: list = None
+    ) -> StandardizedCompletedProcess:
         """
         gcc_compile_with_options("hello.c", "libhello.bundle", ["-bundle"])
         We expect a C source code file at the provided path. We'll compile it into a bundle and output it to the
@@ -405,10 +407,15 @@ class DarwinSTDLib(STDLib):
             assert False, "Unable to install Xcode command line tools!"
         gcc_bin_path: str = "/usr/bin/gcc"
         if options is not None:
-            cmdl: list = [gcc_bin_path, "-o", output_file_path, source_code_path] + options
+            cmdl: list = [
+                gcc_bin_path,
+                "-o",
+                output_file_path,
+                source_code_path,
+            ] + options
         else:
             cmdl: list = [gcc_bin_path, "-o", output_file_path, source_code_path]
-        
+
         gcc_compile_proc = subprocess.run(cmdl, capture_output=True)
         returncode: int = gcc_compile_proc.returncode
         stdout: str = gcc_compile_proc.stdout.decode("utf-8")
@@ -524,20 +531,46 @@ class DarwinSTDLib(STDLib):
         """
         Returns the list of file types supported by `Archive Utility.app`.
         """
-        archive_utility_path: Path = Path("/System/Library/CoreServices/Applications/Archive Utility.app")
+        archive_utility_path: Path = Path(
+            "/System/Library/CoreServices/Applications/Archive Utility.app"
+        )
 
         # Get the plist and attempt to read the `CFBundleDocumentTypes` key:
-        archive_utility_plist = DarwinSTDLib.get_app_plist(app_path=archive_utility_path)
+        archive_utility_plist = DarwinSTDLib.get_app_plist(
+            app_path=archive_utility_path
+        )
         if "CFBundleDocumentTypes" in archive_utility_plist:
-            return list(filter(lambda item: item is not None, map(lambda plist_dict: DarwinSTDLib.get_supported_file_type(plist_dict), archive_utility_plist["CFBundleDocumentTypes"])))
+            return list(
+                filter(
+                    lambda item: item is not None,
+                    map(
+                        lambda plist_dict: DarwinSTDLib.get_supported_file_type(
+                            plist_dict
+                        ),
+                        archive_utility_plist["CFBundleDocumentTypes"],
+                    ),
+                )
+            )
 
     @staticmethod
-    def query_aul(options: list, predicate: str, look_back_s: int=10) -> [str]:
+    def query_aul(options: list, predicate: str, look_back_s: int = 10) -> [str]:
         """
         Queries the Apple Unified Logging by the predicate specified and returns the logs as a list of strings.
         """
-        result = subprocess.run(['/usr/bin/log', 'show', *options, '--last', f'{look_back_s}s', '--predicate', f'{predicate}'], capture_output=True)
+        result = subprocess.run(
+            [
+                "/usr/bin/log",
+                "show",
+                *options,
+                "--last",
+                f"{look_back_s}s",
+                "--predicate",
+                f"{predicate}",
+            ],
+            capture_output=True,
+        )
         return result.stdout.decode("utf-8").splitlines()
+
 
 class LinuxSTDLib(STDLib):
     def __init__(self):
