@@ -1,3 +1,5 @@
+<p><img src="assets/logo.png" width="225px" /></p>
+
 # AtomicTestHarnesses
 
 AtomicTestHarnesses is a library that simulates and validates attack technique
